@@ -7,8 +7,6 @@ import argparse
 import shutil
 from pathlib import Path
 
-from init_workflow_logs import write_workflow_logs
-
 
 def copytree_merge(src: Path, dst: Path, overwrite: bool) -> None:
     if not src.exists():
@@ -40,16 +38,6 @@ def main() -> int:
         action="store_true",
         help="Replace an existing thesis-ai-standard directory.",
     )
-    parser.add_argument(
-        "--no-workflow-logs",
-        action="store_true",
-        help="Do not create paper-context/workflow markdown logs.",
-    )
-    parser.add_argument(
-        "--overwrite-workflow-logs",
-        action="store_true",
-        help="Replace existing paper-context/workflow markdown logs.",
-    )
     args = parser.parse_args()
 
     skill_dir = Path(__file__).resolve().parents[1]
@@ -59,15 +47,8 @@ def main() -> int:
 
     target_dir.mkdir(parents=True, exist_ok=True)
     copytree_merge(src, dst, overwrite=args.overwrite)
-    written_logs = []
-    if not args.no_workflow_logs:
-        written_logs = write_workflow_logs(target_dir, overwrite=args.overwrite_workflow_logs)
 
     print(f"Initialized thesis workspace: {dst}")
-    if not args.no_workflow_logs:
-        print(f"Workflow logs: {target_dir / 'paper-context' / 'workflow'}")
-        for path in written_logs:
-            print(f"- {path}")
     print("Next files to fill:")
     print(f"- {dst / 'templates' / 'standard-profile.yaml'}")
     print(f"- {dst / 'templates' / 'thesis-ai-spec.yaml'}")

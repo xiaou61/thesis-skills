@@ -1,6 +1,6 @@
 interface:
   display_name: "论文标准化"
-  short_description: "论文工作台、Word批注、文献引用和风格报告"
-  default_prompt: "Use $thesis-standardizer to initialize thesis-ai-standard and paper-context workflow logs, resolve school standards, build source/PDF evidence indexes, extract Word comments when a DOCX draft exists, create citation cross-references, generate an AIGC style-risk report when drafts exist, and draft or revise chapters only after evidence gaps are listed."
+  short_description: "论文资料包、自动文献检索、引用闭环和AIGC风格报告"
+  default_prompt: "Use $thesis-standardizer to initialize thesis-ai-standard, resolve school standards, build source evidence indexes, automatically generate literature search configs when PDFs are missing, use the recent 6-year literature window based on the user's current year unless user or school requirements override it, harvest and verify real Chinese/English references, extract PDF references, ask for body citation scope before broad citation planning, keep each body citation point to at most two references with no clustered citations, avoid citations in abstracts unless required, create citation cross-references, generate an AIGC style-risk report when drafts exist, and draft or revise chapters only after evidence gaps are listed."
 policy:
   allow_implicit_invocation: true

@@ -17,11 +17,12 @@ Use before saying a thesis package, chapter draft, or review is complete.
 - Claimed functions map to code, screenshots, tests, or user-provided materials.
 - Claimed tests or experiments map to reports, logs, tables, or screenshots.
 - Literature claims map to verified references or explicit `needs_check` candidates.
-- `paper-context/workflow/evidence-gaps.md` lists unresolved unsupported claims.
+- Each body citation point uses at most 2 references; no sentence or claim has 3 or more clustered citations.
 
 ## Gate 3: Academic Integrity
 
 - No fabricated references, DOI values, years, journals, APIs, fields, test results, samples, or metrics.
+- No clustered citations used to inflate reference density.
 - No AI workflow leakage in body text.
 - PDF reference extraction is treated as candidate evidence until verified.
 - Private data, tokens, account names, phone numbers, and keys are not exposed in screenshots or prose.
@@ -42,20 +43,6 @@ Use before saying a thesis package, chapter draft, or review is complete.
 - Generic positive conclusions were replaced with concrete claims, limits, or future work.
 - Revisions did not add unsupported facts or citations.
 
-## Gate 4.6: Workflow Logs
-
-- `paper-context/workflow/workflow-status.md` reflects the current stage.
-- `paper-context/workflow/step-plan.md` shows completed, blocked, and pending steps.
-- `paper-context/workflow/progress-log.md` has a current session entry.
-- `paper-context/workflow/revision-log.md` records content and Word-comment changes.
-
-## Gate 4.7: Word Comment Revision
-
-- Word comments were extracted to `paper-context/word-comments/word-comment-todos.md` when a commented `.docx` was provided.
-- Each comment is marked resolved, skipped, or blocked with a reason.
-- DOCX edits are logged in `docx-revision-log.md`.
-- Layout-sensitive comment fixes were verified through Word/PDF when possible.
-
 ## Gate 5: Figures, Tables, Equations
 
 - Figure captions are below figures unless school rules differ.
@@ -69,17 +56,9 @@ Use before saying a thesis package, chapter draft, or review is complete.
 Run applicable checks:
 
 ```powershell
-python C:\Users\Lenovo\.codex\skills\.system\skill-creator\scripts\quick_validate.py .\thesis-standardizer
-Get-ChildItem .\thesis-standardizer\scripts -Filter *.py | ForEach-Object { python -m py_compile $_.FullName }
+python -m py_compile .\thesis-standardizer\scripts\*.py
 python .\thesis-standardizer\scripts\check_thesis_workspace.py .\thesis-standardizer\assets\thesis-ai-standard
-python .\thesis-standardizer\scripts\init_workflow_logs.py .\tmp-thesis-workspace
 python .\thesis-standardizer\scripts\analyze_aigc_style.py .\sample-draft.md --out .\paper-context\aigc\aigc-style-report.md
-```
-
-Run `extract_docx_comments.py` when a real `.docx` draft with comments exists:
-
-```powershell
-python .\thesis-standardizer\scripts\extract_docx_comments.py .\draft.docx --out .\paper-context\word-comments
 ```
 
 For generated thesis workspaces:

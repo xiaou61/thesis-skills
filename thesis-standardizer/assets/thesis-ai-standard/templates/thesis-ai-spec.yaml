@@ -60,6 +60,36 @@ research_or_project:
     api_docs: "填写接口材料路径或 not_applicable"
     test_reports: "填写测试材料路径或 not_applicable"
 
+literature_policy:
+  search_mode: "auto_generate_config_unless_user_specifies"
+  user_requirements_override_defaults: true
+  default_counts:
+    chinese: "12-15"
+    english: "3-5"
+  default_year_range:
+    policy: "recent_6_years_from_user_current_year"
+    current_year: "运行时填写当前年份，例如 2026"
+    start_year: "自动推算：current_year - 5，例如 2021"
+    end_year: "自动等于 current_year，例如 2026"
+    override_rule: "用户、导师、学校或任务书指定年份范围时优先"
+  abstract_citation_policy: "no citations in abstract unless school template explicitly requires them"
+  body_citation_scope: "ask | full_text | front_chapters | custom"
+  body_citation_scope_user_confirmed: false
+  max_references_per_citation_point: 2
+  no_clustered_citations: true
+  clustered_citation_threshold: 3
+  verification_required:
+    - "DOI"
+    - "数据库记录或稳定 URL"
+    - "PDF/HTML/XML 下载文件"
+    - "用户提供的数据库导出记录"
+  must_not:
+    - "编造参考文献"
+    - "使用查找不到的文献"
+    - "为了达到篇数补假文献"
+    - "默认情况下使用超出近6年范围或年份缺失的文献"
+    - "在同一句或同一观点后堆叠 3 篇及以上参考文献"
+
 roles_or_subjects:
   - name: "角色、研究对象或实验对象"
     description: "说明其在论文中的作用"
@@ -277,4 +307,10 @@ ai_rules:
     - "术语一致性"
     - "证据链完整性"
     - "参考文献引用闭环"
+    - "文献是否真实可核验"
+    - "摘要是否误加引用"
+    - "正文文献覆盖范围是否已由用户确认"
+    - "参考文献是否符合默认近6年范围或用户指定年份范围"
+    - "每个正文引用点是否不超过 2 篇参考文献"
+    - "是否存在 3 篇及以上扎堆引用"
     - "学术诚信风险"

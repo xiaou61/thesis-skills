@@ -150,6 +150,7 @@
 7. 测试、实验或分析结果可信度
 8. 学术诚信风险
 9. 是否出现 AI 工作流痕迹
+10. 是否存在单个正文引用点超过 2 篇参考文献或 3 篇及以上扎堆引用
 
 输出：
 - 总体评分
@@ -177,8 +178,10 @@
 4. PDF 抽取候选但尚未核验的文献
 5. 与章节论点弱相关或不应引用的文献
 6. 需要补充核验的作者、年份、题名、来源、DOI 或 URL
+7. 超出默认近 6 年范围、年份缺失或与用户指定年份范围不符的文献
+8. 单个正文引用点超过 2 篇参考文献或存在 3 篇及以上扎堆引用的问题
 
-要求：候选文献不能直接当作最终参考文献；必须标注 verified / needs_check / rejected。
+要求：候选文献不能直接当作最终参考文献；必须标注 verified / needs_check / rejected。每个正文引用点最多 2 篇参考文献，超过时应拆分到不同论点、句子或综述矩阵比较说明。
 ```
 
 ## 8. 论文资料包自检
@@ -220,33 +223,4 @@ Use $thesis-standardizer，请读取当前章节草稿，运行 AIGC style-gover
 3. 删除空泛评价句，改为具体结论、限制或后续工作。
 4. 模糊归因必须补真实来源或标注 needs_source。
 5. 输出改写正文、关键改动说明、仍需补证据清单。
-```
-
-## 11. 论文工作台进度更新
-
-```text
-Use $thesis-standardizer，请读取 paper-context/workflow/ 下的 workflow-status.md、step-plan.md、progress-log.md、evidence-gaps.md、chapter-progress.md 和 revision-log.md。
-
-请输出：
-1. 当前论文执行到哪一步
-2. 已完成事项
-3. 正在进行事项
-4. 阻塞事项和缺失材料
-5. 下一步 3 个动作
-
-然后更新对应 markdown 文件，保持状态一致。
-```
-
-## 12. Word 批注读取与修订
-
-```text
-Use $thesis-standardizer，请先运行 extract_docx_comments.py 读取 Word 文档批注，生成 paper-context/word-comments/word-comment-todos.md。
-
-然后：
-1. 按批注类型分组：内容、结构、引用、格式、图表、证据不足。
-2. 对每条批注给出处理策略：resolved / blocked / skipped。
-3. 能直接修改的批注，按 thesis-docx/docx 规则修改 Word 文档。
-4. 需要新增事实、数据或引用的批注，不要编造，标注 needs_evidence 或 needs_source。
-5. 修改后更新 docx-revision-log.md 和 paper-context/workflow/revision-log.md。
-6. 输出已解决批注、未解决批注、修改后的文档路径和需要人工复核的内容。
 ```

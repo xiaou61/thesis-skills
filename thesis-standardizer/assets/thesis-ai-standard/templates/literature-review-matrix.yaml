@@ -11,12 +11,39 @@ review_topic:
     - "研究问题1"
 
 sources:
+  generated_search_config: "paper-context/literature/literature-harvest-config.json"
+  harvest_candidate_table: "paper-context/literature/harvest-runs/thesis_literature_YYYYMMDD/keyword_research_candidate_table.csv"
+  verified_literature_selected: "paper-context/literature/verified-selection/verified-literature-selected.csv"
+  verified_literature_report: "paper-context/literature/verified-selection/verified-literature-selection.md"
   pdf_folder: "papers/"
   extracted_reference_json: "paper-context/literature/reference-extraction.json"
   extracted_reference_md: "paper-context/literature/reference-extraction.md"
   citation_crossrefs_md: "paper-context/literature/citation-crossrefs.md"
   citation_crossrefs_json: "paper-context/literature/citation-crossrefs.json"
   citation_crossref_register: "thesis-ai-standard/templates/citation-crossref-register.yaml"
+
+search_policy:
+  user_requirements_override_defaults: true
+  automatic_config_generation: true
+  default_counts:
+    chinese: "12-15"
+    english: "3-5"
+  default_year_range:
+    policy: "recent_6_years_from_user_current_year"
+    current_year: "运行时填写当前年份，例如 2026"
+    start_year: "自动推算：current_year - 5，例如 2021"
+    end_year: "自动等于 current_year，例如 2026"
+    override_rule: "用户、导师、学校或任务书指定年份范围时优先"
+  body_citation_scope: "ask | full_text | front_chapters | custom"
+  abstract_citation_policy: "no citations in abstract unless school template explicitly requires them"
+  max_references_per_citation_point: 2
+  no_clustered_citations: true
+  clustered_citation_threshold: 3
+  verification_required:
+    - "DOI"
+    - "数据库记录或稳定 URL"
+    - "PDF/HTML/XML 下载文件"
+    - "用户提供的 CNKI/万方/维普/学校图书馆导出记录"
 
 themes:
   - id: "theme-1"
@@ -26,6 +53,10 @@ themes:
       - title_or_ref: "填写文献题名或原始参考文献"
         source_pdf: "papers/example.pdf"
         relevance: "strong | medium | weak | needs_check"
+        verification_status: "verified | needs_manual_verification | rejected"
+        verification_locator: "填写 DOI、URL、数据库记录号或本地文件路径"
+        publication_year: "填写已核验年份；默认必须在近6年范围内"
+        language: "zh | en | other"
         used_in_chapter: "第1章/第2章/其他"
         claim_supported: "该文献支撑的具体论点"
         notes: "待核验作者、年份、DOI、期刊等"
@@ -46,5 +77,9 @@ integrity_rules:
   must_not:
     - "编造 DOI"
     - "编造作者或年份"
+    - "默认情况下使用超出近6年范围或年份缺失的文献"
     - "引用与正文论点无关的文献"
     - "把 PDF 提取候选项直接当最终参考文献"
+    - "使用查找不到或无法核验的文献"
+    - "为了凑数量编造中文或英文文献"
+    - "在同一句或同一观点后堆叠 3 篇及以上参考文献"

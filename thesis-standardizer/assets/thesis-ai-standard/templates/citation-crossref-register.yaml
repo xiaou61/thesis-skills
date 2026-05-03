@@ -5,10 +5,31 @@ encoding: "utf-8"
 purpose: "管理正文引用、文末参考文献与 PDF 来源之间的交叉引用闭环"
 
 sources:
+  verified_literature_selected: "paper-context/literature/verified-selection/verified-literature-selected.csv"
+  verified_literature_report: "paper-context/literature/verified-selection/verified-literature-selection.md"
   extracted_reference_json: "paper-context/literature/reference-extraction.json"
   citation_crossrefs_md: "paper-context/literature/citation-crossrefs.md"
   citation_crossrefs_json: "paper-context/literature/citation-crossrefs.json"
   verified_reference_list: "paper-context/reference-list.md"
+
+global_citation_policy:
+  user_requirements_override_defaults: true
+  default_literature_counts:
+    chinese: "12-15"
+    english: "3-5"
+  default_year_range:
+    policy: "recent_6_years_from_user_current_year"
+    current_year: "运行时填写当前年份，例如 2026"
+    start_year: "自动推算：current_year - 5，例如 2021"
+    end_year: "自动等于 current_year，例如 2026"
+    override_rule: "用户、导师、学校或任务书指定年份范围时优先"
+  abstract_citation_policy: "no citations in abstract unless school template explicitly requires them"
+  body_citation_scope: "ask | full_text | front_chapters | custom"
+  citation_scope_confirmation: "填写用户确认结果"
+  max_references_per_citation_point: 2
+  no_clustered_citations: true
+  clustered_citation_threshold: 3
+  citation_point_policy: "每个正文引用点最多 2 篇参考文献，禁止 3 篇及以上扎堆引用"
 
 body_citations:
   - citation_id: "CIT-001"
@@ -16,9 +37,12 @@ body_citations:
     section: "1.3 国内外研究现状"
     claim: "填写正文中需要文献支撑的具体论点"
     candidate_reference: "填写候选参考文献原文或题名"
+    reference_count_at_point: "填写该引用点关联文献数量；必须 <= 2"
+    candidate_year: "填写已核验年份；默认必须在近6年范围内"
     source_pdf: "papers/example.pdf"
     relevance: "strong | medium | weak | needs_check"
     verification_status: "candidate | verified | rejected"
+    verification_locator: "填写 DOI、稳定 URL、数据库记录、本地文件或用户导出记录"
     final_reference_key: "REF-001"
     notes: "核验作者、年份、题名、期刊、DOI、页码或 URL"
 
@@ -35,6 +59,7 @@ reference_list:
       title: false
       source: false
       doi_or_url: false
+      existence_locatable: false
 
 closure_checks:
   required:
@@ -42,5 +67,11 @@ closure_checks:
     - "文末每个参考文献条目都能回到正文引用位置"
     - "候选 PDF 抽取结果已核验后才进入最终参考文献"
     - "弱相关文献不得为了凑数量而引用"
+    - "摘要默认不放引用，除非学校模板明确要求"
+    - "正文引用范围已按用户确认执行"
+    - "参考文献默认在近6年范围内，年份缺失或超出范围的条目需用户确认后才可保留"
+    - "未使用查找不到或无法核验的参考文献"
+    - "每个正文引用点最多 2 篇参考文献"
+    - "不存在 3 篇及以上扎堆引用"
   unresolved:
     - "填写待核验或待删除的引用问题"

@@ -1,6 +1,6 @@
 ---
 name: thesis-standardizer
-description: Standardize and draft undergraduate thesis or graduation-design papers from source code, school templates, task books, drafts, screenshots, databases, APIs, experiments, PDF literature, Word comments, and test evidence. Use when the user asks to write, generate, refactor, check, modify, or package a thesis; turn a program into thesis chapters; create thesis specs, workflow progress markdown logs, figure registries, draw.io diagrams, evidence indexes, PDF reference extraction, citation cross-reference maps, AIGC style-risk reports, Word comment todo lists, academic prose revision reports, or school-rule enforcement before drafting.
+description: Standardize and draft undergraduate thesis or graduation-design papers from source code, school templates, task books, drafts, screenshots, databases, APIs, experiments, automated scholarly literature searches, PDF literature, and test evidence. Use when the user asks to write, generate, refactor, check, or package a thesis; turn a program into thesis chapters; automatically generate literature search configs, harvest and verify real Chinese/English references, create thesis specs, figure registries, evidence indexes, PDF reference extraction, citation cross-reference maps, AIGC style-risk reports, academic prose revision reports, or school-rule enforcement before drafting.
 ---
 
 # Thesis Standardizer
@@ -25,21 +25,18 @@ Use modules independently, then combine them for end-to-end thesis work:
 
 1. Standards module: school rules, advisor rules, national-standard fallback.
 2. Evidence module: source code, tests, screenshots, data, experiments.
-3. Literature module: PDF extraction, citation cross-references, reference closure.
+3. Literature module: keyword literature harvest, PDF extraction, citation cross-references, reference closure.
 4. AIGC style-governance module: report-first academic prose review and targeted revision.
-5. Workflow-log module: markdown status, step plan, progress log, evidence gaps, chapter progress, revision log.
-6. Word-comment revision module: extract DOCX comments, create comment todos, revise document, log changes.
-7. Output module: final quality gates, Word/PDF handoff, residual risks.
+5. Output module: final quality gates, Word/PDF handoff, residual risks.
 
 ## Decision Tree
 
-- New thesis workspace or missing templates: run `scripts/init_thesis_workspace.py <target-dir>`; it also creates `paper-context/workflow/*.md`.
-- Missing workflow logs only: run `scripts/init_workflow_logs.py <target-dir>`.
+- New thesis workspace or missing templates: run `scripts/init_thesis_workspace.py <target-dir>`.
 - Standards, school-template interpretation, or version conflicts: read `references/standards-and-template-resolution.md`.
 - Program/source-code thesis: read `references/source-to-thesis-workflow.md`; run `scripts/build_project_evidence.py <project-dir> --out paper-context/evidence`.
-- PDF literature, related work, or citations: read `references/literature-and-pdf-workflow.md`; run the PDF extraction and citation cross-reference scripts.
+- Literature search, open full-text collection, or missing PDF set: read `references/literature-harvest-workflow.md`; auto-generate the search config first unless the user supplied exact requirements, then run harvest, resume, second-pass, dedup, and verified selection before PDF extraction.
+- PDF literature, related work, or citations from existing PDFs: read `references/literature-and-pdf-workflow.md`; run the PDF extraction and citation cross-reference scripts.
 - AIGC, AI flavor, templated prose, academic style naturalness, or style report: read `references/aigc-style-governance.md`; run `scripts/analyze_aigc_style.py <draft-file> --out paper-context/aigc/aigc-style-report.md`.
-- Word comments, DOCX comments, advisor comments in Word, or "modify the thesis according to comments": read `references/word-comment-revision-workflow.md`; run `scripts/extract_docx_comments.py <draft.docx> --out paper-context/word-comments`.
 - Existing draft or Word-format-sensitive work: use this skill for standards/evidence, then use `thesis-docx`/`docx` for Word layout and PDF review.
 - Finalized thesis revision, second-round editing, or any `.docx` with stable TOC/cross-references/figure anchors: prefer in-place targeted edits inside a copied original `.docx`; avoid pandoc body round-trips unless the user explicitly accepts layout rebuild risk.
 - Before final delivery: read `references/quality-gates.md` and run `scripts/check_thesis_workspace.py <workspace>` when a `thesis-ai-standard/` folder exists.
@@ -49,11 +46,10 @@ Use modules independently, then combine them for end-to-end thesis work:
 | User asks for | Load | Run | Deliver |
 | --- | --- | --- | --- |
 | "turn my program into a thesis" | `source-to-thesis-workflow.md` | `build_project_evidence.py` | evidence index, missing materials, chapter plan |
-| "track thesis progress" | `workflow-state-management.md` | `init_workflow_logs.py` | `paper-context/workflow/*.md` status files |
 | "make the standard generic" | `standards-and-template-resolution.md` | `check_thesis_workspace.py` | standards priority, template profile, unsupported assumptions |
+| "find papers/references" | `literature-harvest-workflow.md` | `generate_literature_search_config.py`, `run_keyword_harvest_no_dedup.py`, `continue_download_and_dedup.py`, `verify_select_literature.py` | generated search config, candidate table, download log, deduplicated files, verified Chinese/English selection, shortage list |
 | "handle PDF literature" | `literature-and-pdf-workflow.md` | `extract_pdf_references.py`, `build_literature_crossrefs.py` | candidate references, citation cross-reference index, verification list |
 | "lower AIGC flavor" | `aigc-style-governance.md` | `analyze_aigc_style.py` | style-risk report first, then targeted revision after confirmation |
-| "revise by Word comments" | `word-comment-revision-workflow.md` | `extract_docx_comments.py` | comment todo list, revision plan, revised DOCX, change log |
 | "write or revise a chapter" | `rapid-thesis-workflow.md`, then the matching detailed workflow | validation scripts if files changed | chapter draft plus evidence gaps |
 | "final check" | `quality-gates.md` | `check_thesis_workspace.py` and applicable format checks | critical/major/minor findings and remaining manual review |
 
@@ -66,22 +62,24 @@ When `thesis-ai-standard/` exists, read:
 3. `thesis-ai-standard/templates/standard-profile.yaml`
 4. `thesis-ai-standard/templates/thesis-ai-spec.yaml`
 5. `thesis-ai-standard/templates/figure-registry.yaml`
-6. `paper-context/workflow/workflow-status.md` when it exists.
-7. literature or citation templates only when the task involves references.
-8. word-comment files only when the task involves DOCX comments.
+6. literature harvest, review, or citation templates only when the task involves references.
 
 If those files do not exist, bootstrap them from `assets/thesis-ai-standard/`.
 
 ## Core Workflow
 
 1. Collect standards: school template, advisor instructions, task book, proposal.
-2. Collect evidence: source code, database schema, API docs, screenshots, test reports, data, experiment logs, PDFs, existing drafts.
+2. Collect evidence: source code, database schema, API docs, screenshots, test reports, data, experiment logs, keyword-harvest logs, PDFs, existing drafts.
 3. Fill `standard-profile.yaml` before interpreting formatting rules.
 4. Fill `thesis-ai-spec.yaml` before drafting chapters.
 5. Fill `figure-registry.yaml` before generating diagrams or screenshots.
-6. Stop and list missing materials when a claim lacks evidence.
-7. Draft chapter by chapter using `chapter-section-template.md`.
-8. Review with `ai-review-rubric.json`, `check_thesis_workspace.py`, and the quality gates.
+6. For literature, generate search terms from thesis materials by default; user-specified search requirements override defaults.
+7. For literature years, default to the recent 6 years based on the user's current year; user, school, advisor, or task-book year requirements override this default.
+8. Before planning body citations, ask whether literature coverage should apply to the full body or only front research/theory chapters.
+9. Keep each body citation point to at most 2 references; split larger source groups across separate claims, sentences, or matrix notes instead of clustering citations.
+10. Stop and list missing materials when a claim lacks evidence.
+11. Draft chapter by chapter using `chapter-section-template.md`; do not place citations in the abstract unless school rules require it.
+12. Review with `ai-review-rubric.json`, `check_thesis_workspace.py`, and the quality gates.
 
 ## Thesis Type Selection
 
@@ -104,27 +102,35 @@ Do not force non-software papers into the system-design chapter structure.
 - Never frame AIGC work as bypassing a detector. Frame it as academic style, evidence density, source integrity, and revision transparency.
 - For Word-format-sensitive thesis revisions, do not replace the whole body through markdown/pandoc round-trip by default. Preserve the original `.docx` structure and edit the minimum necessary text in place.
 - Every figure/table/equation/screenshot must have source, ID, title, first mention, and status.
-- PDF reference extraction creates candidates only; verify bibliography before final writing.
+- Keyword harvest and PDF reference extraction create candidates only; verify bibliography before final writing.
+- Default literature selection is Chinese `12-15` and English `3-5` unless the user or school requires otherwise.
+- Default literature publication years are the recent 6 years based on the user's current year, including the current year; if the current year is 2026, use `2021-2026` unless the user or school specifies another range.
+- User search requirements override automatic defaults.
+- Do not output references that cannot be located by DOI, database record, stable URL, downloaded file, or user-provided export.
+- Reject out-of-range or missing-year literature by default; only keep missing-year records when the user accepts manual year verification.
+- Do not add citations in the abstract unless the school template explicitly requires them.
+- Each body citation point may cite at most 2 references; never cluster 3 or more references after one sentence or one claim.
 - Claim completion only after running relevant script validation or clearly stating what could not be verified.
 
 ## Bundled References
 
 - `references/standards-and-template-resolution.md`: source priority, current public standards, and school-template conflict handling.
 - `references/source-to-thesis-workflow.md`: program/source-code to thesis evidence workflow.
+- `references/literature-harvest-workflow.md`: keyword scholarly search, legal full-text collection, HTML/XML handling, second-pass PDF chase, and file deduplication.
 - `references/literature-and-pdf-workflow.md`: PDF reference extraction and citation cross-reference workflow.
 - `references/aigc-style-governance.md`: report-first AIGC style-risk review and academic prose revision workflow.
-- `references/workflow-state-management.md`: markdown progress logs and step-state workflow.
-- `references/word-comment-revision-workflow.md`: extract DOCX comments, revise safely, and log changes.
 - `references/rapid-thesis-workflow.md`: short path for common thesis package tasks.
 - `references/quality-gates.md`: final validation checklist.
 
 ## Bundled Scripts
 
 - `scripts/init_thesis_workspace.py`: copy `assets/thesis-ai-standard/` into a project.
-- `scripts/init_workflow_logs.py`: create `paper-context/workflow/*.md` progress files.
 - `scripts/build_project_evidence.py`: create source-code evidence files for system-design papers.
+- `scripts/generate_literature_search_config.py`: infer literature search queries and target counts from thesis materials.
+- `scripts/run_keyword_harvest_no_dedup.py`: search scholarly APIs, create a no-dedup candidate table, and download accessible PDFs or HTML/XML full texts.
+- `scripts/continue_download_and_dedup.py`: resume downloads, run HTML-to-PDF second pass, and deduplicate downloaded files.
+- `scripts/verify_select_literature.py`: select verifiable Chinese and English literature and report shortages without fabricating references.
 - `scripts/extract_pdf_references.py`: extract candidate reference sections from PDFs.
 - `scripts/build_literature_crossrefs.py`: map extracted references to thesis topics or chapter claims.
-- `scripts/extract_docx_comments.py`: extract Word comments into JSON/Markdown revision todos.
 - `scripts/check_thesis_workspace.py`: validate required templates, parse YAML/JSON/XML, and report missing core files.
 - `scripts/analyze_aigc_style.py`: generate a style-risk report for thesis prose before targeted revision.

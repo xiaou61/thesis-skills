@@ -21,7 +21,7 @@ If school rules are missing, use bundled defaults but mark them as replaceable.
 Run:
 
 ```powershell
-python C:\Users\Lenovo\.codex\skills\thesis-standardizer\scripts\init_thesis_workspace.py .
+python .\scripts\init_thesis_workspace.py .
 ```
 
 Then fill:
@@ -30,17 +30,13 @@ Then fill:
 thesis-ai-standard/templates/standard-profile.yaml
 thesis-ai-standard/templates/thesis-ai-spec.yaml
 thesis-ai-standard/templates/figure-registry.yaml
-paper-context/workflow/workflow-status.md
-paper-context/workflow/step-plan.md
 ```
 
 Validate the package before writing:
 
 ```powershell
-python C:\Users\Lenovo\.codex\skills\thesis-standardizer\scripts\check_thesis_workspace.py .\thesis-ai-standard
+python .\scripts\check_thesis_workspace.py .\thesis-ai-standard
 ```
-
-Read `references/workflow-state-management.md` before long-running thesis work. Update `paper-context/workflow/*.md` at the start and end of every meaningful phase.
 
 ## From Program To Thesis
 
@@ -48,7 +44,7 @@ For software/system projects:
 
 1. Run `build_project_evidence.py` to create a first-pass evidence folder:
    ```powershell
-   python C:\Users\Lenovo\.codex\skills\thesis-standardizer\scripts\build_project_evidence.py . --out .\paper-context\evidence
+   python .\scripts\build_project_evidence.py . --out .\paper-context\evidence
    ```
 2. Read `project-evidence.json`, `tech-stack.md`, `api-list.md`, `database-schema.md`, and `test-results.md`.
 3. Inspect the source files behind important claims; script output is an index, not proof by itself.
@@ -87,7 +83,7 @@ For existing chapter drafts or after first drafting:
 
 1. Run the local style report:
    ```powershell
-   python C:\Users\Lenovo\.codex\skills\thesis-standardizer\scripts\analyze_aigc_style.py .\chapter-draft.md --out .\paper-context\aigc\aigc-style-report.md --json-out .\paper-context\aigc\aigc-style-report.json
+   python .\scripts\analyze_aigc_style.py .\chapter-draft.md --out .\paper-context\aigc\aigc-style-report.md --json-out .\paper-context\aigc\aigc-style-report.json
    ```
 2. Read `references/aigc-style-governance.md`.
 3. Update `thesis-ai-standard/templates/aigc-style-review.yaml` or a project copy.
@@ -95,21 +91,6 @@ For existing chapter drafts or after first drafting:
 5. Mark unsupported claims as `needs_source` or `needs_evidence`.
 
 Do not describe this as bypassing an AIGC detector. Describe it as academic style and evidence-quality revision.
-
-## Word Comment Revision
-
-For `.docx` drafts with advisor comments:
-
-1. Extract comments:
-   ```powershell
-   python C:\Users\Lenovo\.codex\skills\thesis-standardizer\scripts\extract_docx_comments.py .\draft.docx --out .\paper-context\word-comments
-   ```
-2. Read `references/word-comment-revision-workflow.md`.
-3. Read `paper-context/word-comments/word-comment-todos.md`.
-4. Resolve comments one by one; log each change in:
-   - `paper-context/word-comments/docx-revision-log.md`
-   - `paper-context/workflow/revision-log.md`
-5. Use `thesis-docx`/`docx` for actual Word edits and final layout checks.
 
 ## Stop Conditions
 
@@ -128,7 +109,6 @@ Instead output an exact missing-material list.
 Before final response, run or perform:
 
 - `check_thesis_workspace.py` for generated template packages
-- workflow markdown files are updated after content changes
 - YAML parse for standard/spec/registry files
 - JSON parse for review rubric
 - XML parse for draw.io templates if modified

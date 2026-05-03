@@ -76,13 +76,15 @@ format_defaults:
   equation_numbering: "独立成行，编号右侧，例如 (3-1)"
   table_style: "三线表优先"
   reference_citation: "正文引用与文末条目一一闭环"
+  reference_citation_point_limit: "每个正文引用点最多 2 篇参考文献，禁止 3 篇及以上扎堆引用"
+  literature_year_range: "默认以用户当前年份为准取近6年文献；学校、导师或用户指定年份范围时优先"
 
 content_rules:
   abstract:
     required: true
     default_notes:
       - "说明背景、目的、方法或系统方案、结果或实现内容、结论"
-      - "一般不放图表、公式和参考文献标注"
+      - "默认不放图表、公式和参考文献标注；只有学校模板明确要求时才加入引用"
   keywords:
     default_count: "3-5"
     notes: "术语应覆盖研究对象、方法和应用领域"
@@ -103,6 +105,10 @@ academic_integrity:
     - "所有图表有证据来源"
     - "所有测试结论有记录或截图支撑"
     - "所有参考文献在正文中至少被引用一次，除非学校另有规定"
+    - "参考文献必须真实可核验，能定位到 DOI、数据库记录、稳定 URL、本地文件或用户提供的数据库导出记录"
+    - "默认参考文献年份应在用户当前年份对应的近6年范围内，除非用户或学校另有要求"
+    - "正文文献引用范围必须按用户确认执行"
+    - "每个正文引用点最多引用 2 篇参考文献，禁止扎堆引用"
 
 review_policy:
   before_ai_generation:

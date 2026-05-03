@@ -23,7 +23,7 @@ Preferred inputs:
 Run:
 
 ```powershell
-python C:\Users\Lenovo\.codex\skills\thesis-standardizer\scripts\build_project_evidence.py . --out .\paper-context\evidence
+python .\scripts\build_project_evidence.py . --out .\paper-context\evidence
 ```
 
 Outputs:
@@ -43,7 +43,7 @@ The script is a first pass. Read the outputs, then inspect source files before m
 If the workspace was just initialized, also run:
 
 ```powershell
-python C:\Users\Lenovo\.codex\skills\thesis-standardizer\scripts\check_thesis_workspace.py .\thesis-ai-standard
+python .\scripts\check_thesis_workspace.py .\thesis-ai-standard
 ```
 
 Treat warnings as setup tasks before drafting, especially unconfirmed reference standard versions and unfilled thesis type.
