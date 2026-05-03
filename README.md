@@ -304,6 +304,38 @@ Use $thesis-standardizer，读取 paper-context/aigc/aigc-style-report.md 和 th
 - 不把外部检测报告当成绝对真相。
 - 最终目标是论文更自然、更具体、更有证据，而不是欺骗检测器。
 
+## Word 批注读取与自动修订
+
+如果导师在 Word 论文里写了批注，可以先抽取批注：
+
+```powershell
+python $env:USERPROFILE\.codex\skills\thesis-standardizer\scripts\extract_docx_comments.py .\draft.docx --out .\paper-context\word-comments
+```
+
+生成：
+
+```text
+paper-context/word-comments/
+  word-comments.json
+  word-comment-todos.md
+  docx-revision-log.md
+```
+
+然后让 AI 按批注修改：
+
+```text
+Use $thesis-standardizer，读取 paper-context/word-comments/word-comment-todos.md，按导师 Word 批注逐条修改 draft.docx。能直接修改的就改；需要新增数据、来源或截图的地方标注 needs_evidence / needs_source；每条批注的处理结果写入 docx-revision-log.md 和 workflow/revision-log.md。
+```
+
+推荐处理规则：
+
+- 内容批注：按论文事实和证据修改，不编造。
+- 结构批注：先更新章节计划，再改正文。
+- 引用批注：必须走文献交叉引用闭环。
+- 格式批注：学校模板优先，必要时用 `thesis-docx` 做 Word/PDF 复核。
+- 定稿或二次修改：不要默认把 Markdown/Pandoc 正文回灌到原始 `.docx`。这会扰动目录、分页、图表锚点、页眉页脚和局部版式。优先复制原稿后做原位定点替换，只改必要段落文本。
+- 不明确或冲突批注：标记 `blocked`，说明原因。
+
 ## 自检与终稿
 
 修改或初始化模板后可以运行：
