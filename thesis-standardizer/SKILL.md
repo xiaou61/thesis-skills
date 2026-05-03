@@ -41,6 +41,7 @@ Use modules independently, then combine them for end-to-end thesis work:
 - AIGC, AI flavor, templated prose, academic style naturalness, or style report: read `references/aigc-style-governance.md`; run `scripts/analyze_aigc_style.py <draft-file> --out paper-context/aigc/aigc-style-report.md`.
 - Word comments, DOCX comments, advisor comments in Word, or "modify the thesis according to comments": read `references/word-comment-revision-workflow.md`; run `scripts/extract_docx_comments.py <draft.docx> --out paper-context/word-comments`.
 - Existing draft or Word-format-sensitive work: use this skill for standards/evidence, then use `thesis-docx`/`docx` for Word layout and PDF review.
+- Finalized thesis revision, second-round editing, or any `.docx` with stable TOC/cross-references/figure anchors: prefer in-place targeted edits inside a copied original `.docx`; avoid pandoc body round-trips unless the user explicitly accepts layout rebuild risk.
 - Before final delivery: read `references/quality-gates.md` and run `scripts/check_thesis_workspace.py <workspace>` when a `thesis-ai-standard/` folder exists.
 
 ## Mode Contracts
@@ -101,6 +102,7 @@ Do not force non-software papers into the system-design chapter structure.
 - Never invent functions, fields, API paths, tests, experiment data, samples, citations, DOI values, or school requirements.
 - Never expose AI workflow language in thesis body text.
 - Never frame AIGC work as bypassing a detector. Frame it as academic style, evidence density, source integrity, and revision transparency.
+- For Word-format-sensitive thesis revisions, do not replace the whole body through markdown/pandoc round-trip by default. Preserve the original `.docx` structure and edit the minimum necessary text in place.
 - Every figure/table/equation/screenshot must have source, ID, title, first mention, and status.
 - PDF reference extraction creates candidates only; verify bibliography before final writing.
 - Claim completion only after running relevant script validation or clearly stating what could not be verified.

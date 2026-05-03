@@ -285,6 +285,7 @@ Use $thesis-standardizer，读取 paper-context/word-comments/word-comment-todos
 - 结构批注：先更新章节计划，再改正文。
 - 引用批注：必须走文献交叉引用闭环。
 - 格式批注：学校模板优先，必要时用 `thesis-docx` 做 Word/PDF 复核。
+- 定稿或二次修改：不要默认把 Markdown/Pandoc 正文回灌到原始 `.docx`。这会扰动目录、分页、图表锚点、页眉页脚和局部版式。优先复制原稿后做原位定点替换，只改必要段落文本。
 - 不明确或冲突批注：标记 `blocked`，说明原因。
 
 ## 自检与终稿
