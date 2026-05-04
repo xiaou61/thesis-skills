@@ -25,6 +25,7 @@ REQUIRED_FILES = [
     "templates/figure-registry.yaml",
     "templates/literature-review-matrix.yaml",
     "templates/citation-crossref-register.yaml",
+    "templates/aigc-detection-report.yaml",
     "templates/aigc-style-review.yaml",
     "templates/chapter-section-template.md",
     "templates/ai-prompts.md",

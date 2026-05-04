@@ -3,6 +3,8 @@ language: "zh-CN"
 encoding: "utf-8"
 
 purpose: "记录论文正文的 AIGC 风格风险报告、修改计划与证据边界"
+mode: "report_first | targeted_revision | final_paragraph_pass"
+final_paragraph_pass_warning: "AIGC 最终降低版会按论文文本分割后逐段处理、逐段复查、再拼接全文，极度消耗 token。建议只在终稿或外部报告集中命中时使用。"
 
 policy:
   objective: "提升学术表达质量、论证密度和事实可追溯性"
@@ -14,8 +16,10 @@ policy:
 inputs:
   draft_file: "填写待检查正文路径"
   external_report_file: "可选：AIGC 报告 html/pdf/docx 路径"
+  local_detection_report_md: "paper-context/aigc/aigc-detection-report.md"
   local_report_md: "paper-context/aigc/aigc-style-report.md"
   local_report_json: "paper-context/aigc/aigc-style-report.json"
+  final_paragraph_pass_md: "paper-context/aigc/aigc-final-paragraph-pass.md"
 
 review_workflow:
   - step: "先生成报告"
@@ -27,11 +31,15 @@ review_workflow:
   - step: "定向改写"
     status: "pending | done | skipped"
     notes: "只改高风险段落，保留事实和引用"
+  - step: "最终逐段降低版"
+    status: "pending | done | skipped"
+    notes: "按段落逐段改写、逐段记录、再拼接全文；极度消耗 token"
   - step: "复查"
     status: "pending | done | skipped"
     notes: "复查公式化表达、证据缺口和引用边界"
 
 risk_patterns:
+  macro_opening: "随着/近年来/当前/在...背景下等宏大起笔"
   formulaic_theory_start: "依据/基于/根据某理论起笔过多"
   summary_tail: "由此可见/综上所述/此案例表明等段末套句"
   rigid_sequence: "首先/其次/再次等过于整齐的枚举"
@@ -39,7 +47,22 @@ risk_patterns:
   vague_attribution: "研究表明/专家认为但无具体来源"
   filler_phrase: "值得注意的是/不难发现等空引导"
   generic_positive: "具有重要意义/前景广阔等空泛评价"
+  abstract_role_shell: "扮演重要角色/起到重要作用/作为重要载体"
+  value_claim_without_boundary: "提升效率/优化体验/增强能力但无指标、对象或边界"
+  method_shell: "通过采用某方法实现优化但未写清输入、过程和输出"
+  parallel_triad: "规范性、科学性、有效性等并列词串过密"
+  double_clause_balance: "不仅...而且...造成机械均衡句式"
+  absolute_claim: "显著提升/全面解决/根本解决等绝对化判断"
   repeated_rhythm: "相邻段落结构和句首高度重复"
+  long_paragraph: "单段过长导致论点、证据和结论混杂"
+
+hard_constraints:
+  - "模糊归因必须补真实来源或删除"
+  - "不得新增未核验引用、作者、年份、DOI、实验、系统功能或数据"
+  - "不得用空泛意义句替代缺失证据"
+  - "不得把外部 AIGC 检测分数当成事实性结论"
+  - "不得在论文正文暴露 AI 工作流痕迹"
+  - "不得通过错别字、怪标点、刻意口语化伪装人工写作"
 
 revision_log:
   - paragraph: "第X段"
@@ -51,10 +74,42 @@ revision_log:
     revised: false
     notes: "说明修改理由"
 
+final_paragraph_pass:
+  paragraph_split_rule: "以自然段为单位；标题、图表题、引用列表不混入正文段落"
+  per_paragraph_output:
+    - "revised_paragraph"
+    - "changes"
+    - "preserved_facts"
+    - "needs_source"
+    - "needs_evidence"
+  whole_text_aftercare:
+    - "拼接全文后检查段间衔接"
+    - "检查标题、图表编号、引用位置是否稳定"
+    - "复跑本地风格报告并比较 high/medium 风险段落数量"
+    - "将每个实质性段落改写写入 paper-context/workflow/revision-log.md 和 revision-trace.jsonl"
+
+traceability:
+  required: true
+  workflow_log: "paper-context/workflow/revision-log.md"
+  machine_trace: "paper-context/workflow/revision-trace.jsonl"
+  helper_script: "scripts/append_revision_log.py"
+  required_fields:
+    - "location"
+    - "before"
+    - "after"
+    - "change"
+    - "reason"
+    - "evidence"
+    - "files"
+    - "status"
+  notes: "高/中风险段落只要被改写，就必须能追溯到原段落编号、报告命中模式和证据边界"
+
 final_checks:
   - "未新增未核验事实"
   - "未新增虚构引用"
   - "未出现 AI 工作流痕迹"
   - "模糊归因已删除或补来源"
   - "空泛意义句已改为具体结论、限制或展望"
+  - "最终逐段版已提示极度消耗 token（如启用）"
+  - "所有实质性改写已写入 revision-log.md 或 revision-trace.jsonl"
   - "改写说明已记录"

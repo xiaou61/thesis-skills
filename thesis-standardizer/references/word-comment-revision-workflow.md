@@ -49,7 +49,7 @@ The script extracts comment author, date, text, and the nearest paragraph previe
    - school template
    - existing draft text
 4. Modify only what the comment justifies.
-5. Update `docx-revision-log.md` and `paper-context/workflow/revision-log.md`.
+5. Update `docx-revision-log.md`, `paper-context/workflow/revision-log.md`, and `paper-context/workflow/revision-trace.jsonl`.
 
 ## DOCX Editing Rules
 

@@ -20,8 +20,9 @@
 7. 系统实现类论文先运行 `build_project_evidence.py` 生成 `paper-context/evidence/`。
 8. 使用 `drawio/` 下的 `.drawio` 模板重画结构性图。
 9. 文献综述或相关工作较多时，先自动生成检索配置和近 6 年文献候选，再用 skill 脚本抽取 PDF 参考文献，建立文献交叉引用索引，并用 `citation-crossref-register.yaml` 做正文引用与文末参考文献闭环。
-10. 正文写完或已有草稿时，用 `aigc-style-review.yaml` 和本地报告脚本做 AIGC 风格治理。
-11. 最后用 `templates/ai-review-rubric.json` 做终稿审查，再进入 Word/PDF 视觉检查。
+10. 正文写完或已有草稿时，先用 `aigc-detection-report.yaml` 和检测脚本估计 AIGC 风险，再用 `aigc-style-review.yaml` 做风格治理；终稿需要时可启用逐段处理的 AIGC 最终降低版。
+11. 每次修改正文、引用、图表、格式或 AIGC 段落后，都要写入 `paper-context/workflow/revision-log.md` 和 `revision-trace.jsonl`，方便追溯。
+12. 最后用 `templates/ai-review-rubric.json` 做终稿审查，再进入 Word/PDF 视觉检查。
 
 ## 文件结构
 
@@ -37,6 +38,7 @@ thesis-ai-standard/
     figure-registry.yaml
     literature-review-matrix.yaml
     citation-crossref-register.yaml
+    aigc-detection-report.yaml
     aigc-style-review.yaml
     ai-review-rubric.json
     ai-prompts.md
@@ -103,18 +105,36 @@ paper-context/
     citation-crossrefs.json
     citation-crossref-register.yaml
   aigc/
+    aigc-detection-report.md
+    aigc-detection-report.json
     aigc-style-report.md
     aigc-style-report.json
+  workflow/
+    revision-log.md
+    revision-trace.jsonl
 ```
 
 这些文件是论文事实依据，不是正文。AI 写作时必须把证据转化为论文语体，不能把扫描过程写进正文。
 
 ## AIGC 风格治理建议
 
-本套件的 AIGC 模块不是“绕过检测器”，而是帮助论文减少模板化表达、空泛评价、模糊归因和证据不足的问题。推荐流程：
+本套件的 AIGC 模块分为“检测估计”和“风格治理”两层，不是“绕过检测器”，而是帮助论文减少模板化表达、空泛评价、模糊归因和证据不足的问题。推荐流程：
 
-1. 先生成 `paper-context/aigc/aigc-style-report.md`。
-2. 用户或 AI 根据报告确认需要修改的段落。
-3. 只对高风险段落做定向改写。
-4. 改写时保留事实、引用和数据边界。
-5. 把未核验的来源、数据或项目事实标为 `needs_source` 或 `needs_evidence`。
+1. 先生成 `paper-context/aigc/aigc-detection-report.md`，得到本地启发式 AIGC 率估计和五维评分。
+2. 再生成 `paper-context/aigc/aigc-style-report.md`，定位具体套话、模糊归因和证据缺口。
+3. 用户或 AI 根据报告确认需要修改的段落。
+4. 只对高风险段落做定向改写。
+5. 改写时保留事实、引用和数据边界。
+6. 把未核验的来源、数据或项目事实标为 `needs_source` 或 `needs_evidence`。
+7. 修改后重新生成检测报告，只比较趋势，不把估计值当成学校官方检测分数。
+
+如果需要“整篇最终降低版”，可以让 AI 按正文自然段生成 `paper-context/aigc/aigc-final-paragraph-pass.md`，逐段改写、逐段记录、再拼接全文。该模式极度消耗 token，建议只在终稿或外部报告集中命中时使用。
+
+## 修改追溯要求
+
+论文正文、AIGC 段落、引用、图表、格式和导师批注处理只要发生实质性修改，都必须记录到：
+
+- `paper-context/workflow/revision-log.md`
+- `paper-context/workflow/revision-trace.jsonl`
+
+每条记录至少说明：修改位置、修改前摘要、修改后摘要、改了什么、为什么改、依据来自哪里、涉及哪些文件、是否仍有 `needs_source` 或 `needs_evidence`。高/中风险 AIGC 段落改写必须能对应到段落编号和报告项。

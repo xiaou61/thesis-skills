@@ -81,14 +81,31 @@ For research/data papers:
 
 For existing chapter drafts or after first drafting:
 
-1. Run the local style report:
+1. If the user asks for AIGC rate or before/after comparison, run the local detection report:
+   ```powershell
+   python .\scripts\detect_aigc_rate.py .\chapter-draft.md --out .\paper-context\aigc\aigc-detection-report.md --json-out .\paper-context\aigc\aigc-detection-report.json
+   ```
+   State that this is a local heuristic estimate, not an official detector score.
+2. Run the local style report:
    ```powershell
    python .\scripts\analyze_aigc_style.py .\chapter-draft.md --out .\paper-context\aigc\aigc-style-report.md --json-out .\paper-context\aigc\aigc-style-report.json
    ```
-2. Read `references/aigc-style-governance.md`.
-3. Update `thesis-ai-standard/templates/aigc-style-review.yaml` or a project copy.
-4. Revise only confirmed high-risk paragraphs.
-5. Mark unsupported claims as `needs_source` or `needs_evidence`.
+3. Read `references/aigc-style-governance.md`.
+4. Update `thesis-ai-standard/templates/aigc-style-review.yaml` or a project copy.
+5. Revise only confirmed high-risk paragraphs.
+6. Mark unsupported claims as `needs_source` or `needs_evidence`.
+
+For a full-paper final paragraph pass, warn the user first:
+
+```text
+AIGC 最终降低版会按论文文本分割后逐段处理、逐段复查、再拼接全文，极度消耗 token。建议只在终稿或外部报告集中命中时使用。
+```
+
+Then run:
+
+```powershell
+python .\scripts\analyze_aigc_style.py .\chapter-draft.md --out .\paper-context\aigc\aigc-style-report.md --json-out .\paper-context\aigc\aigc-style-report.json --final-paragraph-pass-out .\paper-context\aigc\aigc-final-paragraph-pass.md
+```
 
 Do not describe this as bypassing an AIGC detector. Describe it as academic style and evidence-quality revision.
 

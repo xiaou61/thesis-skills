@@ -197,7 +197,20 @@
 5. 必须先补齐的材料
 ```
 
-## 9. AIGC 风格风险报告
+## 9. AIGC 率检测报告
+
+```text
+Use $thesis-standardizer，请读取当前章节草稿，运行 AIGC detection workflow。
+
+要求：
+1. 生成 paper-context/aigc/aigc-detection-report.md 和 json。
+2. 输出本地启发式 estimated_aigc_rate、overall_risk、confidence。
+3. 按五个维度列出评分：句式规整度、逻辑词密度、语态特征、词汇多样性、论证深度。
+4. 按段落列出 high / medium / low 风险。
+5. 明确说明：这个结果是本地启发式 AIGC 风格估计，不是学校或第三方平台的官方检测分数。
+```
+
+## 10. AIGC 风格风险报告
 
 ```text
 Use $thesis-standardizer，请读取当前章节草稿，运行 AIGC style-governance 模块。
@@ -212,7 +225,7 @@ Use $thesis-standardizer，请读取当前章节草稿，运行 AIGC style-gover
 注意：目标是提升学术写作质量，不承诺规避任何检测器。
 ```
 
-## 10. 基于报告定向改写
+## 11. 基于报告定向改写
 
 ```text
 请基于 aigc-style-report.md 和 aigc-style-review.yaml 只修改高风险段落。
@@ -223,4 +236,36 @@ Use $thesis-standardizer，请读取当前章节草稿，运行 AIGC style-gover
 3. 删除空泛评价句，改为具体结论、限制或后续工作。
 4. 模糊归因必须补真实来源或标注 needs_source。
 5. 输出改写正文、关键改动说明、仍需补证据清单。
+```
+
+## 12. AIGC 最终降低版（逐段，极度消耗 token）
+
+```text
+Use $thesis-standardizer，对整篇论文执行 AIGC 最终降低版。
+
+请先运行 analyze_aigc_style.py，并额外生成：
+paper-context/aigc/aigc-final-paragraph-pass.md
+
+开始前必须提示：
+AIGC 最终降低版会按论文文本分割后逐段处理、逐段复查、再拼接全文，极度消耗 token。建议只在终稿或外部报告集中命中时使用。
+
+逐段处理要求：
+1. 每次只处理一个自然段，保留原事实、数据、引用、章节功能和图表编号。
+2. 删除或改写宏大起笔、理论前置、综上所述、首先其次、研究表明但无来源、具有重要意义等模式。
+3. 对每段输出 revised_paragraph、changes、preserved_facts、needs_source、needs_evidence。
+4. 所有段落处理完后拼接全文，检查段间衔接，不要让每段都像孤立改写。
+5. 复跑风格报告，比较 high/medium 风险段落变化。
+```
+
+## 13. 修改追溯日志
+
+```text
+Use $thesis-standardizer，请为刚才的论文修改补充追溯日志。
+
+要求：
+1. 写入 paper-context/workflow/revision-log.md。
+2. 同步写入 paper-context/workflow/revision-trace.jsonl。
+3. 每条记录包含：location、before、after、change、reason、evidence、files、status。
+4. AIGC 高/中风险段落改写必须对应到段落编号和报告项。
+5. 仍缺来源或证据的位置标注 needs_source / needs_evidence。
 ```

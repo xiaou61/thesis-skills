@@ -32,7 +32,7 @@ Generated: {today}
 | 5. Plan figures/tables | pending | `figure-registry.yaml` | Every item needs source and first mention |
 | 6. Draft chapters | pending | chapter drafts | Evidence first, prose second |
 | 7. Word comment revision | pending | `paper-context/word-comments/` | Extract comments, revise, log changes |
-| 8. AIGC style pass | pending | `paper-context/aigc/` | Report first, then targeted revision |
+| 8. AIGC detection/style pass | pending | `paper-context/aigc/` | Optional rate estimate, style report, targeted revision, final paragraph pass with token warning |
 | 9. Final review | pending | review report | Quality gates, Word/PDF visual review |
 
 ## Latest Decision
@@ -60,8 +60,9 @@ Keep this file as the task board for the thesis. Move each item through:
 | S8 | Draft chapters | pending | S6-S7 | chapter drafts |
 | S9 | Extract Word comments | pending | `.docx` draft | `word-comment-todos.md` |
 | S10 | Revise by comments | pending | S9 | revised `.docx` + `docx-revision-log.md` |
-| S11 | Run AIGC style report | pending | chapter drafts | `aigc-style-report.md` |
-| S12 | Final quality gate | pending | S8-S11 | final review report |
+| S11 | Run AIGC detection/style reports / optional final paragraph pass | pending | chapter drafts | `aigc-detection-report.md`, `aigc-style-report.md`, optional `aigc-final-paragraph-pass.md` |
+| S12 | Update revision trace logs | pending | S8-S11 | `revision-log.md` + `revision-trace.jsonl` |
+| S13 | Final quality gate | pending | S8-S12 | final review report |
 """,
     "progress-log.md": """# Thesis Progress Log
 
@@ -131,9 +132,20 @@ Record every claim that cannot yet be supported.
 
 Use this file for all thesis changes, including Word comments, AIGC style edits, figure/table changes, and standard fixes.
 
-| ID | Date | Source | Location | Change | Evidence | Status |
-| --- | --- | --- | --- | --- | --- | --- |
-| REV-001 | {today} | initialization | workspace | Created workflow logs | script output | done |
+Every material text change must be traceable:
+
+1. where it changed
+2. what changed
+3. why it changed
+4. what evidence or report justified it
+5. which files were touched
+6. whether any source/evidence gap remains
+
+| ID | Date | Source | Location | Before | After | Change | Reason | Evidence | Files | Status |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| REV-001 | {today} | initialization | workspace | - | workflow absent | Created workflow logs | initialize traceability workbench | script output | paper-context/workflow/* | done |
+""",
+    "revision-trace.jsonl": """{{"id":"REV-001","date":"{today}","source":"initialization","location":"workspace","before":"-","after":"workflow logs created","change":"Created workflow logs","reason":"initialize traceability workbench","evidence":"script output","files":["paper-context/workflow/*"],"status":"done","needs_source":"none","needs_evidence":"none"}}
 """,
 }
 

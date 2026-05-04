@@ -37,11 +37,22 @@ Use before saying a thesis package, chapter draft, or review is complete.
 
 ## Gate 4.5: AIGC Style Governance
 
+- `aigc-detection-report.md` exists when the user requested AIGC-rate detection.
+- AIGC-rate estimates are framed as local heuristic estimates, not official detector scores.
 - `aigc-style-report.md` exists when the user requested AIGC/style reduction.
 - High-risk paragraphs were revised or explicitly left unchanged with reasons.
 - Vague attribution was removed, verified, or marked `needs_source`.
 - Generic positive conclusions were replaced with concrete claims, limits, or future work.
 - Revisions did not add unsupported facts or citations.
+- If final paragraph pass was used, `aigc-final-paragraph-pass.md` exists, the token-cost warning was shown, paragraph IDs stayed aligned, and the final text was checked for cross-paragraph cohesion.
+
+## Gate 4.6: Revision Traceability
+
+- `paper-context/workflow/revision-log.md` exists for any revision task.
+- `paper-context/workflow/revision-trace.jsonl` exists for machine-readable traceability when the helper script is available.
+- Each material edit records location, before/after summary, change, reason, evidence, touched files, and status.
+- Each high/medium-risk AIGC paragraph rewrite maps to a paragraph ID in the style report or final paragraph pass work order.
+- Unresolved source or evidence gaps are recorded in `evidence-gaps.md` or marked in the revision record.
 
 ## Gate 5: Figures, Tables, Equations
 
