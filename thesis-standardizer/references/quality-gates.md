@@ -5,6 +5,17 @@ Use before saying a thesis package, chapter draft, or review is complete.
 ## Gate 1: Standards
 
 - `standard-profile.yaml` exists and identifies school/advisor rules.
+- `template-rule-overrides.yaml` exists when a school `.docx` template was supplied.
+- A template comparison report exists when final `.docx` delivery is checked against a supplied school template.
+- If automatic repair was used, a repair report exists and the repaired `.docx` was re-compared against the template.
+- Body-start section inferred from the template is reviewed, especially when cover, abstract, TOC, and正文 are split across multiple sections.
+- Explicit Arabic page numbering starts in the same section as the inferred body-start section, unless the school template clearly uses another rule.
+- Front-matter sections before the inferred body-start section do not introduce explicit Arabic page-number settings unless the school template explicitly does so.
+- Later body sections do not introduce unexpected page-number restarts unless the school template explicitly resets numbering there.
+- If the template uses Roman numerals in front matter and Arabic numerals in the body, that format switch is preserved at the same section boundary.
+- Explicit page-number restart events after body start follow the same section sequence and restart values as the template.
+- Back-matter sections such as `参考文献` / `附录` follow the same restart-or-continue page-number policy as the template.
+- If the template uses dedicated TOC sections, the TOC-to-body section boundary is preserved in the thesis document.
 - Reference style version is explicit.
 - Bundled defaults are marked as fallback, not school requirements.
 - Standard conflicts are resolved using `standards-and-template-resolution.md`.
@@ -67,9 +78,13 @@ Use before saying a thesis package, chapter draft, or review is complete.
 Run applicable checks:
 
 ```powershell
-python -m py_compile .\thesis-standardizer\scripts\*.py
+Get-ChildItem .\thesis-standardizer\scripts\*.py | ForEach-Object { python -m py_compile $_.FullName }
 python .\thesis-standardizer\scripts\check_thesis_workspace.py .\thesis-standardizer\assets\thesis-ai-standard
 python .\thesis-standardizer\scripts\analyze_aigc_style.py .\sample-draft.md --out .\paper-context\aigc\aigc-style-report.md
+python .\thesis-standardizer\scripts\compare_docx_to_template.py .\draft.docx .\paper-context\template-extract\template-profile.json --template-rule-overrides .\paper-context\template-extract\template-rule-overrides.yaml --out .\paper-context\template-compare\template-compare-report.md
+python .\thesis-standardizer\scripts\repair_docx_from_template.py .\draft.docx .\paper-context\template-extract\template-profile.json --out-docx .\draft_repaired.docx --out-report .\paper-context\template-compare\template-repair-report.md
+python .\thesis-standardizer\scripts\finalize_docx_with_template.py .\draft.docx .\paper-context\template-extract\template-profile.json --template-rule-overrides .\paper-context\template-extract\template-rule-overrides.yaml --workspace . --out-dir .\paper-context\template-compare
+python .\thesis-standardizer\scripts\finalize_thesis_delivery.py .\draft.docx --workspace .
 ```
 
 For generated thesis workspaces:

@@ -24,6 +24,24 @@ Run:
 python .\scripts\init_thesis_workspace.py .
 ```
 
+Or use the one-command bootstrap:
+
+```powershell
+python .\scripts\bootstrap_thesis_project.py .
+```
+
+If you already have a school `.docx` thesis template, prefer:
+
+```powershell
+python .\scripts\bootstrap_thesis_project.py . --template-docx .\school-template.docx
+```
+
+This adds:
+
+- `paper-context/template-extract/template-profile.json`
+- `paper-context/template-extract/template-profile.md`
+- `paper-context/template-extract/template-rule-overrides.yaml`
+
 Then fill:
 
 ```text
@@ -47,16 +65,17 @@ For software/system projects:
    python .\scripts\build_project_evidence.py . --out .\paper-context\evidence
    ```
 2. Read `project-evidence.json`, `tech-stack.md`, `api-list.md`, `database-schema.md`, and `test-results.md`.
-3. Inspect the source files behind important claims; script output is an index, not proof by itself.
-4. Extract real facts into `thesis-ai-spec.yaml`.
-5. Create a figure plan in `figure-registry.yaml`:
+3. If `paper-context/template-extract/template-rule-overrides.yaml` exists, read it before planning chapter headings or body layout-sensitive sections.
+4. Inspect the source files behind important claims; script output is an index, not proof by itself.
+5. Extract real facts into `thesis-ai-spec.yaml`.
+6. Create a figure plan in `figure-registry.yaml`:
    - system architecture
    - module diagram
    - business flow
    - ER diagram or data model
    - key sequence diagrams
    - screenshots and test result figures
-6. Draft chapters in this order:
+7. Draft chapters in this order:
    - related technology
    - requirement analysis
    - overall design
@@ -126,6 +145,10 @@ Instead output an exact missing-material list.
 Before final response, run or perform:
 
 - `check_thesis_workspace.py` for generated template packages
+- `compare_docx_to_template.py` when a final `.docx` should be checked against a supplied school template
+- `repair_docx_from_template.py` for conservative margin/header/footer repair before the final re-check
+- `finalize_docx_with_template.py` to run compare, repair, re-compare, and revision logging in one pass
+- `finalize_thesis_delivery.py` as the preferred final-entry command for thesis format delivery checks
 - YAML parse for standard/spec/registry files
 - JSON parse for review rubric
 - XML parse for draw.io templates if modified

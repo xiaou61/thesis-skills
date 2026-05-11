@@ -280,6 +280,9 @@ figure_policy:
   naming_pattern: "figure-{chapter}-{index}-{english-name}.drawio"
 
 evidence_index:
+  template_profile: "paper-context/template-extract/template-profile.json"
+  template_profile_report: "paper-context/template-extract/template-profile.md"
+  template_rule_overrides: "paper-context/template-extract/template-rule-overrides.yaml"
   project_evidence: "paper-context/evidence/project-evidence.json"
   code_structure: "paper-context/evidence/code-structure.md"
   tech_stack: "paper-context/evidence/tech-stack.md"

@@ -18,11 +18,13 @@
 5. 使用 `templates/chapter-section-template.md` 逐章生成、改写或检查正文。
 6. 使用 `templates/figure-registry.yaml` 管理全部图、表、公式、截图、源文件和正文引用位置。
 7. 系统实现类论文先运行 `build_project_evidence.py` 生成 `paper-context/evidence/`。
-8. 使用 `drawio/` 下的 `.drawio` 模板重画结构性图。
-9. 文献综述或相关工作较多时，先自动生成检索配置和近 6 年文献候选，再用 skill 脚本抽取 PDF 参考文献，建立文献交叉引用索引，并用 `citation-crossref-register.yaml` 做正文引用与文末参考文献闭环。
-10. 正文写完或已有草稿时，先用 `aigc-detection-report.yaml` 和检测脚本估计 AIGC 风险，再用 `aigc-style-review.yaml` 做风格治理；终稿需要时可启用逐段处理的 AIGC 最终降低版。
-11. 每次修改正文、引用、图表、格式或 AIGC 段落后，都要写入 `paper-context/workflow/revision-log.md` 和 `revision-trace.jsonl`，方便追溯。
-12. 最后用 `templates/ai-review-rubric.json` 做终稿审查，再进入 Word/PDF 视觉检查。
+8. 如果想一次完成“初始化资料包 + workflow 日志 + 项目证据首轮扫描 + 模板检查”，可以直接运行 `bootstrap_thesis_project.py`。
+9. 如果已经有学校模板提取结果和论文 `.docx` 草稿，终稿阶段优先运行 `finalize_thesis_delivery.py`，统一完成资料包检查、模板格式比对、保守修复和修复后二次比对。
+10. 使用 `drawio/` 下的 `.drawio` 模板重画结构性图。
+11. 文献综述或相关工作较多时，先运行 `generate_literature_search_config.py`、`run_keyword_harvest_no_dedup.py`、`continue_download_and_dedup.py`、`verify_select_literature.py`，再抽取 PDF 参考文献并建立正文-文末引用闭环。
+12. 正文写完或已有草稿时，先用 `aigc-detection-report.yaml` 和检测脚本估计 AIGC 风险，再用 `aigc-style-review.yaml` 做风格治理；终稿需要时可启用逐段处理的 AIGC 最终降低版。
+13. 每次修改正文、引用、图表、格式或 AIGC 段落后，都要写入 `paper-context/workflow/revision-log.md` 和 `revision-trace.jsonl`，方便追溯。
+14. 最后用 `templates/ai-review-rubric.json` 做终稿审查，再进入 Word/PDF 视觉检查。
 
 ## 文件结构
 
