@@ -17,6 +17,14 @@
 
 ![ChatGPT Image 2026年5月11日 15_15_33](https://eduplan-1305448902.cos.ap-guangzhou.myqcloud.com/imgs/202605111515700.png)
 
+# 成果展示
+
+AIGC降低 突破**维普**4.30新模型
+
+![image-20260512123453145](https://eduplan-1305448902.cos.ap-guangzhou.myqcloud.com/imgs/202605121235353.png)
+
+**知网5.0**:等待突破中。。
+
 ## 5 分钟起步
 
 如果你不想先看完整 README，直接照这个表做就行：
