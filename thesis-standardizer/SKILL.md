@@ -42,6 +42,7 @@ Use modules independently, then combine them for end-to-end thesis work:
 - AIGC, AI flavor, templated prose, academic style naturalness, paragraph-level humanizing, or style report: read `references/aigc-style-governance.md`; run `scripts/analyze_aigc_style.py <draft-file> --out paper-context/aigc/aigc-style-report.md`.
 - AIGC revision planning, deterministic reduction plan, or paragraph-by-paragraph replacement plan: read `references/aigc-style-governance.md`; run `scripts/build_aigc_revision_plan.py <draft-file> --out paper-context/aigc/aigc-revision-plan.md --json-out paper-context/aigc/aigc-revision-plan.json`.
 - "AIGC final reduction version", "整篇逐段降低", or similar full-paper final pass: run `scripts/analyze_aigc_style.py <draft-file> --out paper-context/aigc/aigc-style-report.md --json-out paper-context/aigc/aigc-style-report.json --final-paragraph-pass-out paper-context/aigc/aigc-final-paragraph-pass.md`; warn the user that this mode is extremely token-consuming.
+- When the user says "还是像 AI", "不像人写的", "太机器了", or asks for "大白话", treat the problem as structural before lexical: load `vendor/aigc-reduce/SKILL.md`, reduce checklist cadence, split dense enumerations, and rewrite toward natural undergraduate prose rather than polished summary prose.
 - Existing draft or Word-format-sensitive work: use this skill for standards/evidence, then use `thesis-docx`/`docx` for Word layout and PDF review.
 - DOCX creation, editing, template alignment, or final Word delivery: read `references/docx-production-rules.md` before changing Word-format-sensitive files.
 - Finalized thesis revision, second-round editing, or any `.docx` with stable TOC/cross-references/figure anchors: prefer in-place targeted edits inside a copied original `.docx`; avoid pandoc body round-trips unless the user explicitly accepts layout rebuild risk.
@@ -114,6 +115,7 @@ Do not force non-software papers into the system-design chapter structure.
 - Never frame AIGC work as bypassing a detector. Frame it as academic style, evidence density, source integrity, and revision transparency.
 - AIGC-rate output from bundled scripts is a local heuristic estimate only; never present it as a school or third-party official detector score.
 - For paragraph-by-paragraph final AIGC reduction, explicitly state: "AIGC 最终降低版会按论文文本分割后逐段处理、逐段复查、再拼接全文，极度消耗 token。"
+- When lowering Chinese thesis prose, do not stop at synonym replacement. Prefer reducing structure first: cut "总-分-总" cadence, avoid spec-sheet listing, and make the text read like a student explaining the system in sequence.
 - No substantive thesis edit is complete until `revision-log.md` or `revision-trace.jsonl` records what changed, where it changed, why it changed, and what evidence supports it.
 - For Word-format-sensitive thesis revisions, do not replace the whole body through markdown/pandoc round-trip by default. Preserve the original `.docx` structure and edit the minimum necessary text in place.
 - Every figure/table/equation/screenshot must have source, ID, title, first mention, and status.
