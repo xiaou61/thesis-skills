@@ -59,8 +59,18 @@ Use it to prioritize revision:
 
 1. Run `detect_aigc_rate.py` before revision.
 2. Run `analyze_aigc_style.py` for the 10 deep AI-writing patterns from `aigc-reduce`.
-3. Revise high-risk paragraphs.
-4. Run `detect_aigc_rate.py` again and compare estimated rate, triggered dimension count, and paragraph-risk changes.
+3. Revise high-risk paragraphs one by one, not the whole chapter in one shot.
+4. Run `detect_aigc_rate.py` again after that first repair round.
+5. Compare estimated rate, triggered dimension count, and paragraph-risk changes.
+6. Do one more focused repair round on the paragraphs that are still obviously high risk.
+
+In plain words, the default rhythm is:
+
+1. 先看哪里问题大。
+2. 一段一段改。
+3. 改完先本地测一次。
+4. 看测出来还像不像 AI。
+5. 再补一轮，不要一次性全重写。
 
 ## Report Use
 
@@ -71,5 +81,11 @@ Use the detection report as a triage layer:
 - High passive markers: convert abstract process shells into direct method/result statements.
 - Excess nested numbering or colon lists: unfold them into natural thesis prose.
 - High comma density: split overloaded clauses and reduce hanging `从而 / 进而 / 由此` chains.
+
+If the user asks for "大白话", explain the findings in ordinary Chinese first, for example:
+
+- 不说 "burstiness too low", 直接说 "这几句长得太整齐了，看着像一批量产出来的"。
+- 不说 "template phrase density is elevated", 直接说 "这一段套话有点多，像在凑标准论文腔"。
+- 不说 "colon-list scaffold", 直接说 "这句像在列配置单，不像人在顺着讲"。
 
 Do not use the report to promise a target score. Do not write "已通过检测" unless the user provides an actual external report showing that result.

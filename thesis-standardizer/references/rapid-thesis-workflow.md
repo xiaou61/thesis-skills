@@ -121,7 +121,7 @@ For existing chapter drafts or after first drafting:
 For a full-paper final paragraph pass, warn the user first:
 
 ```text
-AIGC 最终降低版会按论文文本分割后逐段处理、逐段复查、再拼接全文，极度消耗 token。建议只在终稿或外部报告集中命中时使用。
+AIGC 最终降低版会按论文文本分割后逐段处理。每段先修，再本地检测，再补一轮，最后再拼接全文，极度消耗 token。建议只在终稿或外部报告集中命中时使用。
 ```
 
 Then run:

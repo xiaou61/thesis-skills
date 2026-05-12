@@ -4,7 +4,7 @@ encoding: "utf-8"
 
 purpose: "记录论文正文的 AIGC 风格风险报告、修改计划与证据边界"
 mode: "report_first | targeted_revision | final_paragraph_pass"
-final_paragraph_pass_warning: "AIGC 最终降低版会按论文文本分割后逐段处理、逐段复查、再拼接全文，极度消耗 token。建议只在终稿或外部报告集中命中时使用。"
+final_paragraph_pass_warning: "AIGC 最终降低版会按论文文本分割后逐段处理。每段先修，再本地检测，再补一轮，最后再拼接全文，极度消耗 token。建议只在终稿或外部报告集中命中时使用。"
 
 policy:
   objective: "按 aigc-reduce 三轮协议提升学术表达质量、论证密度和事实可追溯性"
