@@ -2,17 +2,24 @@
 
 Use this module when the user asks to detect text AIGC rate, estimate AI-generated writing percentage, compare before/after reduction, or produce an AIGC detection report.
 
-This module is inspired by `free-revalution/AIGC-Detector-Pro`: score text across five dimensions and combine them into an estimated AIGC-style rate. The local script is heuristic and offline. It is not an institutional detector, not a plagiarism/AIGC platform, and not proof of misconduct or clearance.
+This module now follows `xiaofenggan01/aigc-reduce`: scan the text for template phrases, burstiness, passive voice, nested numbering, colon-list scaffolds, paragraph symmetry, and punctuation regularity, then convert those signals into a local heuristic AIGC-style estimate. The script is offline and heuristic. It is not an institutional detector, not a plagiarism/AIGC platform, and not proof of misconduct or clearance.
 
-## Five Dimensions
+Local mirror path:
 
-The detector uses these dimensions:
+- `thesis-standardizer/vendor/aigc-reduce/scripts/aigc_scan.py`
+- `thesis-standardizer/vendor/aigc-reduce/references/detection-principles.md`
 
-1. Sentence regularity, weight 25%: sentence length uniformity, template openings, repeated starts.
-2. Connector density, weight 20%: overuse of "首先/其次/综上所述/值得注意的是" or similar English connectors.
-3. Voice characteristics, weight 15%: passive shells, abstract "该设计体现/该方法说明" patterns, impersonal phrasing.
-4. Vocabulary diversity, weight 15%: low lexical variety, repeated generic academic terms.
-5. Argumentation depth, weight 25%: weak evidence, few data/citation/table/experiment/case signals, generic value claims.
+## Detection Dimensions
+
+The detector uses these scan dimensions:
+
+1. Template phrase density: macro openings, bridge phrases, and formulaic conclusions.
+2. Passive-voice markers: `被…测定 / 通过…验证 / 采用…进行` style abstractions.
+3. Burstiness: sentence-length variation, with low CV treated as a stronger AI-like signal.
+4. Paragraph symmetry: runs of 3+ similarly sized paragraphs.
+5. Nested numbering: excessive `（1）（2）…` style numbering markers.
+6. Colon-list structure: `A：…；B：…；C：…` style scaffolded prose.
+7. Punctuation regularity: especially high comma density per sentence.
 
 ## Script
 
@@ -21,6 +28,8 @@ Run:
 ```powershell
 python .\thesis-standardizer\scripts\detect_aigc_rate.py .\chapter-draft.md --out .\paper-context\aigc\aigc-detection-report.md --json-out .\paper-context\aigc\aigc-detection-report.json
 ```
+
+The wrapper keeps thesis-standardizer report paths, but the scan data itself should come from the mirrored upstream script.
 
 Supported input:
 
@@ -33,11 +42,10 @@ Supported input:
 Output:
 
 - estimated AIGC rate
-- overall risk: clear / low / medium / high
-- confidence level
-- five-dimension scores
-- paragraph-level estimated rates
-- issues and rationale
+- overall risk: low / medium / high
+- 7 scan-dimension summaries
+- paragraph-level triggered metrics
+- examples of template phrases and rhythm risks
 
 ## Required Framing
 
@@ -50,18 +58,18 @@ Always explain:
 Use it to prioritize revision:
 
 1. Run `detect_aigc_rate.py` before revision.
-2. Run `analyze_aigc_style.py` for exact formulaic patterns.
+2. Run `analyze_aigc_style.py` for the 10 deep AI-writing patterns from `aigc-reduce`.
 3. Revise high-risk paragraphs.
-4. Run `detect_aigc_rate.py` again and compare estimated rate, dimension scores, and high-risk paragraph counts.
+4. Run `detect_aigc_rate.py` again and compare estimated rate, triggered dimension count, and paragraph-risk changes.
 
 ## Report Use
 
 Use the detection report as a triage layer:
 
-- High sentence regularity: vary paragraph rhythm and remove template scaffolds.
-- High connector density: remove mechanical transitions and use evidence-driven transitions.
-- High voice-characteristics risk: replace passive shells with concrete method or evidence claims.
-- High vocabulary-diversity risk: reduce repeated generic academic terms.
-- High argumentation-depth risk: add verified data, citation, table, experiment, limitation, or mark `needs_evidence`.
+- High template density: remove stock bridges such as `综上所述 / 值得注意的是 / 相关研究表明`.
+- Low burstiness: break overly even sentence lengths and avoid paragraph rhythm symmetry.
+- High passive markers: convert abstract process shells into direct method/result statements.
+- Excess nested numbering or colon lists: unfold them into natural thesis prose.
+- High comma density: split overloaded clauses and reduce hanging `从而 / 进而 / 由此` chains.
 
 Do not use the report to promise a target score. Do not write "已通过检测" unless the user provides an actual external report showing that result.

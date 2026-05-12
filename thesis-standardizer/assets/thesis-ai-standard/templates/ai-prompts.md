@@ -204,10 +204,11 @@ Use $thesis-standardizer，请读取当前章节草稿，运行 AIGC detection w
 
 要求：
 1. 生成 paper-context/aigc/aigc-detection-report.md 和 json。
-2. 输出本地启发式 estimated_aigc_rate、overall_risk、confidence。
-3. 按五个维度列出评分：句式规整度、逻辑词密度、语态特征、词汇多样性、论证深度。
-4. 按段落列出 high / medium / low 风险。
-5. 明确说明：这个结果是本地启发式 AIGC 风格估计，不是学校或第三方平台的官方检测分数。
+2. 检测口径必须对齐 xiaofenggan01/aigc-reduce。
+3. 输出本地启发式 estimated_aigc_rate、overall_risk、triggered_dimensions。
+4. 按扫描维度列出结果：模板句式密度、被动语态、句长突发性、段落对称性、嵌套编号、冒号并列、标点规律。
+5. 按段落列出 triggered_metrics 和 high / medium / low 风险。
+6. 明确说明：这个结果是本地启发式 AIGC 风格估计，不是学校或第三方平台的官方检测分数。
 ```
 
 ## 10. AIGC 风格风险报告
@@ -217,10 +218,10 @@ Use $thesis-standardizer，请读取当前章节草稿，运行 AIGC style-gover
 
 要求：
 1. 先输出风格风险报告，不要直接改写。
-2. 按段落列出命中的公式化表达、模糊归因、空泛结论、枚举过密、节奏重复等问题。
-3. 标注 high / medium / low 风险。
-4. 单独列出 needs_source 和 needs_evidence。
-5. 给出建议修改顺序。
+2. 风格治理口径必须对齐 xiaofenggan01/aigc-reduce 的三轮协议。
+3. 按段落列出命中的 10 类深层 AI 痕迹，例如重要性膨胀、同义词轮换、三板斧、系词回避、模糊归因、公式化挑战段、悬浮式分析、空洞结论、破折号过度使用、虚假范围。
+4. 单独列出 AI 高频词、needs_source 和 needs_evidence。
+5. 给出建议修改顺序，并说明应先做“减法”还是“加法”。
 
 注意：目标是提升学术写作质量，不承诺规避任何检测器。
 ```
@@ -238,6 +239,21 @@ Use $thesis-standardizer，请读取当前章节草稿，运行 AIGC style-gover
 5. 输出改写正文、关键改动说明、仍需补证据清单。
 ```
 
+## 11.5 AIGC 确定性改写计划
+
+```text
+Use $thesis-standardizer，请先生成 AIGC 确定性改写计划，而不是直接整段重写。
+
+要求：
+1. 运行 build_aigc_revision_plan.py，输出 aigc-revision-plan.md 和 json。
+2. 对每个高风险段落按三轮协议列出：
+   - round1_remove_ai_traces
+   - round2_add_human_features
+   - round3_anti_ai_audit
+3. 所有动作必须优先引用 aigc-reduce 的 replacement-tables.md 思路。
+4. 没有证据支持的增强动作只能写建议，不能直接补进正文。
+```
+
 ## 12. AIGC 最终降低版（逐段，极度消耗 token）
 
 ```text
@@ -251,10 +267,11 @@ AIGC 最终降低版会按论文文本分割后逐段处理、逐段复查、再
 
 逐段处理要求：
 1. 每次只处理一个自然段，保留原事实、数据、引用、章节功能和图表编号。
-2. 删除或改写宏大起笔、理论前置、综上所述、首先其次、研究表明但无来源、具有重要意义等模式。
-3. 对每段输出 revised_paragraph、changes、preserved_facts、needs_source、needs_evidence。
-4. 所有段落处理完后拼接全文，检查段间衔接，不要让每段都像孤立改写。
-5. 复跑风格报告，比较 high/medium 风险段落变化。
+2. 严格按三轮协议组织：先去 AI 痕迹，再注入人类特征，最后做 Anti-AI 审计。
+3. 必须结合 replacement-tables.md 的词级、句级、段落级替换表。
+4. 对每段输出 revised_paragraph、deterministic_changes、human_features_added、preserved_facts、needs_source、needs_evidence。
+5. 所有段落处理完后拼接全文，检查段间衔接，不要让每段都像孤立改写。
+6. 复跑风格报告，比较 high/medium 风险段落变化。
 ```
 
 ## 13. 修改追溯日志

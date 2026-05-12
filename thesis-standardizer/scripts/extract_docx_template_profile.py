@@ -18,6 +18,8 @@ from pathlib import Path
 from typing import Any
 from xml.etree import ElementTree as ET
 
+from docx_io import ensure_readable_docx
+
 
 W_NS = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
 R_NS = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
@@ -530,11 +532,7 @@ def main() -> int:
     parser.add_argument("--out", default="paper-context/template-extract", help="Output directory.")
     args = parser.parse_args()
 
-    docx_path = Path(args.docx).resolve()
-    if docx_path.suffix.lower() != ".docx":
-        raise ValueError("Input must be a .docx file.")
-    if not docx_path.exists():
-        raise FileNotFoundError(docx_path)
+    docx_path = ensure_readable_docx(Path(args.docx), "template docx")
 
     out_dir = Path(args.out).resolve()
     out_dir.mkdir(parents=True, exist_ok=True)

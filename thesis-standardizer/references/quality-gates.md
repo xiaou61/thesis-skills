@@ -8,6 +8,7 @@ Use before saying a thesis package, chapter draft, or review is complete.
 - `template-rule-overrides.yaml` exists when a school `.docx` template was supplied.
 - A template comparison report exists when final `.docx` delivery is checked against a supplied school template.
 - If automatic repair was used, a repair report exists and the repaired `.docx` was re-compared against the template.
+- A delivery preflight report exists before final compare/repair when the final-delivery entrypoint was used.
 - Body-start section inferred from the template is reviewed, especially when cover, abstract, TOC, and正文 are split across multiple sections.
 - Explicit Arabic page numbering starts in the same section as the inferred body-start section, unless the school template clearly uses another rule.
 - Front-matter sections before the inferred body-start section do not introduce explicit Arabic page-number settings unless the school template explicitly does so.
@@ -25,6 +26,7 @@ Use before saying a thesis package, chapter draft, or review is complete.
 
 - `thesis-ai-spec.yaml` contains the thesis type and real facts.
 - `figure-registry.yaml` lists each figure, table, equation, screenshot, and source.
+- Checked or inserted figure assets have real source/export files and traceable evidence paths.
 - Claimed functions map to code, screenshots, tests, or user-provided materials.
 - Claimed tests or experiments map to reports, logs, tables, or screenshots.
 - Literature claims map to verified references or explicit `needs_check` candidates.
@@ -81,6 +83,8 @@ Run applicable checks:
 Get-ChildItem .\thesis-standardizer\scripts\*.py | ForEach-Object { python -m py_compile $_.FullName }
 python .\thesis-standardizer\scripts\check_thesis_workspace.py .\thesis-standardizer\assets\thesis-ai-standard
 python .\thesis-standardizer\scripts\analyze_aigc_style.py .\sample-draft.md --out .\paper-context\aigc\aigc-style-report.md
+python .\thesis-standardizer\scripts\check_figure_assets.py --workspace . --out .\paper-context\template-compare\figure-assets-report.md --json-out .\paper-context\template-compare\figure-assets-report.json
+python .\thesis-standardizer\scripts\check_delivery_preflight.py .\draft.docx --workspace . --out .\paper-context\template-compare\delivery-preflight.md
 python .\thesis-standardizer\scripts\compare_docx_to_template.py .\draft.docx .\paper-context\template-extract\template-profile.json --template-rule-overrides .\paper-context\template-extract\template-rule-overrides.yaml --out .\paper-context\template-compare\template-compare-report.md
 python .\thesis-standardizer\scripts\repair_docx_from_template.py .\draft.docx .\paper-context\template-extract\template-profile.json --out-docx .\draft_repaired.docx --out-report .\paper-context\template-compare\template-repair-report.md
 python .\thesis-standardizer\scripts\finalize_docx_with_template.py .\draft.docx .\paper-context\template-extract\template-profile.json --template-rule-overrides .\paper-context\template-extract\template-rule-overrides.yaml --workspace . --out-dir .\paper-context\template-compare

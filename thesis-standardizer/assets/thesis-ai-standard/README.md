@@ -122,13 +122,14 @@ paper-context/
 
 本套件的 AIGC 模块分为“检测估计”和“风格治理”两层，不是“绕过检测器”，而是帮助论文减少模板化表达、空泛评价、模糊归因和证据不足的问题。推荐流程：
 
-1. 先生成 `paper-context/aigc/aigc-detection-report.md`，得到本地启发式 AIGC 率估计和五维评分。
-2. 再生成 `paper-context/aigc/aigc-style-report.md`，定位具体套话、模糊归因和证据缺口。
-3. 用户或 AI 根据报告确认需要修改的段落。
-4. 只对高风险段落做定向改写。
-5. 改写时保留事实、引用和数据边界。
-6. 把未核验的来源、数据或项目事实标为 `needs_source` 或 `needs_evidence`。
-7. 修改后重新生成检测报告，只比较趋势，不把估计值当成学校官方检测分数。
+1. 先生成 `paper-context/aigc/aigc-detection-report.md`，得到基于 `aigc-reduce` 的本地启发式 AIGC 率估计和扫描维度结果。
+2. 再生成 `paper-context/aigc/aigc-style-report.md`，按 `aigc-reduce` 的 10 种深度 AI 痕迹定位具体套话、模糊归因和证据缺口。
+3. 如需逐段动作清单，再生成 `paper-context/aigc/aigc-revision-plan.md`，把三轮协议拆成可执行的 paragraph plan。
+4. 用户或 AI 根据报告和计划确认需要修改的段落。
+5. 只对高风险段落做定向改写。
+6. 改写时保留事实、引用和数据边界。
+7. 把未核验的来源、数据或项目事实标为 `needs_source` 或 `needs_evidence`。
+8. 修改后重新生成检测报告，只比较趋势，不把估计值当成学校官方检测分数。
 
 如果需要“整篇最终降低版”，可以让 AI 按正文自然段生成 `paper-context/aigc/aigc-final-paragraph-pass.md`，逐段改写、逐段记录、再拼接全文。该模式极度消耗 token，建议只在终稿或外部报告集中命中时使用。
 

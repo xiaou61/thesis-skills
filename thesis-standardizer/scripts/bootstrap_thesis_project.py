@@ -8,6 +8,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from docx_io import ensure_readable_docx
+
 
 def run_step(script_dir: Path, name: str, *extra: str) -> None:
     script_path = script_dir / name
@@ -33,7 +35,7 @@ def main() -> int:
     run_step(script_dir, "init_thesis_workspace.py", *init_args)
 
     if args.template_docx:
-        template_docx = Path(args.template_docx).resolve()
+        template_docx = ensure_readable_docx(Path(args.template_docx), "school template docx")
         template_extract_dir = workspace / "paper-context" / "template-extract"
         template_profile_json = template_extract_dir / "template-profile.json"
         run_step(

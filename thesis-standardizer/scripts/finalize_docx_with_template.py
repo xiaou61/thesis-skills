@@ -26,6 +26,7 @@ from compare_docx_to_template import (
     compare_unexpected_page_number_restarts,
     render_markdown as render_compare_markdown,
 )
+from docx_io import ensure_readable_docx
 from extract_docx_template_profile import build_profile
 from repair_docx_from_template import RepairAction, render_markdown as render_repair_markdown, repair_docx
 
@@ -147,7 +148,7 @@ def main() -> int:
     parser.add_argument("--out-docx", help="Path for repaired .docx. Defaults to <name>_repaired.docx next to source.")
     args = parser.parse_args()
 
-    thesis_docx = Path(args.thesis_docx).resolve()
+    thesis_docx = ensure_readable_docx(Path(args.thesis_docx), "thesis docx")
     template_json = Path(args.template_profile_json).resolve()
     workspace = Path(args.workspace).resolve()
     out_dir = resolve_output_dir(args.out_dir, workspace)

@@ -26,8 +26,8 @@ Use modules independently, then combine them for end-to-end thesis work:
 1. Standards module: school rules, advisor rules, national-standard fallback.
 2. Evidence module: source code, tests, screenshots, data, experiments.
 3. Literature module: keyword literature harvest, PDF extraction, citation cross-references, reference closure.
-4. AIGC detection module: local five-dimension AIGC-rate estimate and paragraph risk triage.
-5. AIGC style-governance module: Chinese academic humanizer workflow, report-first review, targeted revision, and token-heavy paragraph-by-paragraph final pass.
+4. AIGC detection module: local `aigc-reduce`-style scan with template-phrase, burstiness, passive-voice, numbering, and punctuation triage.
+5. AIGC style-governance module: `aigc-reduce` three-round protocol, deep-pattern audit, targeted revision, and token-heavy paragraph-by-paragraph final pass.
 6. Traceability module: workflow logs, revision ledger, JSONL change trace, and evidence-gap records.
 7. Output module: final quality gates, Word/PDF handoff, residual risks.
 
@@ -40,8 +40,10 @@ Use modules independently, then combine them for end-to-end thesis work:
 - PDF literature, related work, or citations from existing PDFs: read `references/literature-and-pdf-workflow.md`; run the PDF extraction and citation cross-reference scripts.
 - AIGC rate, AI percentage, detector-style report, or before/after score estimate: read `references/aigc-detection-workflow.md`; run `scripts/detect_aigc_rate.py <draft-file> --out paper-context/aigc/aigc-detection-report.md --json-out paper-context/aigc/aigc-detection-report.json`.
 - AIGC, AI flavor, templated prose, academic style naturalness, paragraph-level humanizing, or style report: read `references/aigc-style-governance.md`; run `scripts/analyze_aigc_style.py <draft-file> --out paper-context/aigc/aigc-style-report.md`.
+- AIGC revision planning, deterministic reduction plan, or paragraph-by-paragraph replacement plan: read `references/aigc-style-governance.md`; run `scripts/build_aigc_revision_plan.py <draft-file> --out paper-context/aigc/aigc-revision-plan.md --json-out paper-context/aigc/aigc-revision-plan.json`.
 - "AIGC final reduction version", "整篇逐段降低", or similar full-paper final pass: run `scripts/analyze_aigc_style.py <draft-file> --out paper-context/aigc/aigc-style-report.md --json-out paper-context/aigc/aigc-style-report.json --final-paragraph-pass-out paper-context/aigc/aigc-final-paragraph-pass.md`; warn the user that this mode is extremely token-consuming.
 - Existing draft or Word-format-sensitive work: use this skill for standards/evidence, then use `thesis-docx`/`docx` for Word layout and PDF review.
+- DOCX creation, editing, template alignment, or final Word delivery: read `references/docx-production-rules.md` before changing Word-format-sensitive files.
 - Finalized thesis revision, second-round editing, or any `.docx` with stable TOC/cross-references/figure anchors: prefer in-place targeted edits inside a copied original `.docx`; avoid pandoc body round-trips unless the user explicitly accepts layout rebuild risk.
 - Any content, citation, figure/table, AIGC, Word-comment, or standards edit: read `references/workflow-state-management.md`; append trace entries with `scripts/append_revision_log.py` or update `paper-context/workflow/revision-log.md` and `revision-trace.jsonl` manually.
 - Before final delivery: read `references/quality-gates.md` and run `scripts/check_thesis_workspace.py <workspace>` when a `thesis-ai-standard/` folder exists.
@@ -54,8 +56,9 @@ Use modules independently, then combine them for end-to-end thesis work:
 | "make the standard generic" | `standards-and-template-resolution.md` | `check_thesis_workspace.py` | standards priority, template profile, unsupported assumptions |
 | "find papers/references" | `literature-harvest-workflow.md` | `generate_literature_search_config.py`, `run_keyword_harvest_no_dedup.py`, `continue_download_and_dedup.py`, `verify_select_literature.py` | generated search config, candidate table, download log, deduplicated files, verified Chinese/English selection, shortage list |
 | "handle PDF literature" | `literature-and-pdf-workflow.md` | `extract_pdf_references.py`, `build_literature_crossrefs.py` | candidate references, citation cross-reference index, verification list |
-| "detect AIGC rate" | `aigc-detection-workflow.md` | `detect_aigc_rate.py` | estimated rate, five-dimension scores, paragraph risk findings |
+| "detect AIGC rate" | `aigc-detection-workflow.md` | `detect_aigc_rate.py` | estimated rate, scan-dimension summary, paragraph risk findings |
 | "lower AIGC flavor" | `aigc-style-governance.md` | `analyze_aigc_style.py` | style-risk report first, then targeted revision after confirmation |
+| "build AIGC revision plan" | `aigc-style-governance.md` | `build_aigc_revision_plan.py` | deterministic paragraph actions for round 1/2/3 |
 | "AIGC final reduction version" / "逐段降低" | `aigc-style-governance.md` | `analyze_aigc_style.py --final-paragraph-pass-out ...` | paragraph work order, explicit token warning, paragraph-aligned rewrite plan |
 | "record changes" / "追溯修改" | `workflow-state-management.md` | `append_revision_log.py` | human-readable revision log plus JSONL trace |
 | "write or revise a chapter" | `rapid-thesis-workflow.md`, then the matching detailed workflow | validation scripts if files changed | chapter draft plus evidence gaps |
@@ -130,11 +133,13 @@ Do not force non-software papers into the system-design chapter structure.
 - `references/source-to-thesis-workflow.md`: program/source-code to thesis evidence workflow.
 - `references/literature-harvest-workflow.md`: keyword scholarly search, legal full-text collection, HTML/XML handling, second-pass PDF chase, and file deduplication.
 - `references/literature-and-pdf-workflow.md`: PDF reference extraction and citation cross-reference workflow.
-- `references/aigc-detection-workflow.md`: local five-dimension AIGC-rate estimate and before/after comparison workflow.
-- `references/aigc-style-governance.md`: Chinese academic humanizer workflow, report-first style-risk review, targeted paragraph revision, and final paragraph pass.
+- `references/aigc-detection-workflow.md`: local `aigc-reduce` scan workflow and before/after comparison guidance.
+- `references/aigc-style-governance.md`: `aigc-reduce` three-round style-governance workflow, targeted paragraph revision, and final paragraph pass.
+- `vendor/aigc-reduce/`: mirrored upstream rules, replacement tables, and scan script from `xiaofenggan01/aigc-reduce`.
 - `references/workflow-state-management.md`: persistent workflow status, progress, evidence gaps, and traceable revision logs.
 - `references/rapid-thesis-workflow.md`: short path for common thesis package tasks.
 - `references/quality-gates.md`: final validation checklist.
+- `references/docx-production-rules.md`: DOCX-safe operating baseline, fallback Chinese academic defaults, and verification contract.
 
 ## Bundled Scripts
 
@@ -147,6 +152,7 @@ Do not force non-software papers into the system-design chapter structure.
 - `scripts/extract_pdf_references.py`: extract candidate reference sections from PDFs.
 - `scripts/build_literature_crossrefs.py`: map extracted references to thesis topics or chapter claims.
 - `scripts/check_thesis_workspace.py`: validate required templates, parse YAML/JSON/XML, and report missing core files.
-- `scripts/detect_aigc_rate.py`: estimate a text's AIGC-style rate with five weighted dimensions and paragraph findings.
-- `scripts/analyze_aigc_style.py`: generate a style-risk report for thesis prose before targeted revision; optionally emit a token-heavy final paragraph pass work order.
+- `scripts/detect_aigc_rate.py`: estimate a text's AIGC-style risk using the `aigc-reduce` scan dimensions and paragraph findings.
+- `scripts/analyze_aigc_style.py`: generate a style-risk report for thesis prose using the `aigc-reduce` deep-pattern audit; optionally emit a token-heavy final paragraph pass work order.
+- `scripts/build_aigc_revision_plan.py`: build a deterministic paragraph-by-paragraph revision plan using the `aigc-reduce` three-round protocol.
 - `scripts/append_revision_log.py`: append traceable change records to `paper-context/workflow/revision-log.md` and `revision-trace.jsonl`.

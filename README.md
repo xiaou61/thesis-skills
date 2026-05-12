@@ -6,10 +6,12 @@
 
 最适合这几类场景：
 
-- 你已经有项目源码，想把它整理成一套可写论文的资料包
-- 你已经有论文初稿，想继续改，而不是从 0 重写
-- 你已经拿到了学校 `.docx` 模板，想把格式检查做细、做稳
-- 你要在终稿阶段统一检查页边距、页码、目录边界、参考文献节、附录节这些格式细节
+| 场景 | 这个项目帮你做什么 |
+| --- | --- |
+| 已有项目源码 | 抽证据、整理技术事实、搭论文资料包 |
+| 已有论文初稿 | 延续修改，不从 0 重写 |
+| 已拿到学校 `.docx` 模板 | 提模板规则、做格式比对和保守修复 |
+| 已接近终稿 | 统一检查页边距、页码、目录边界、参考文献节、附录节 |
 
 ## 整体流程图
 
@@ -17,25 +19,30 @@
 
 ## 5 分钟起步
 
-如果你不想先看完整 README，直接照这个顺序做就行：
+如果你不想先看完整 README，直接照这个表做就行：
 
-1. 让 AI 初始化工作区，并把学校模板一起纳入项目上下文
-2. 让 AI 从项目源码和材料里构建证据包
-3. 让 AI 检查标准层文件是否缺失或未补全
+| 步骤 | 先做什么 | 输出 / 结果 |
+| --- | --- | --- |
+| 1 | 初始化工作区，并把学校模板一起纳入上下文 | `thesis-ai-standard/`、`paper-context/` |
+| 2 | 从项目源码和材料里构建证据包 | `paper-context/evidence/` |
+| 3 | 检查标准层文件是否缺失或未补全 | 缺口清单、下一步建议 |
+| 4 | 补三个核心模板 | `standard-profile.yaml`、`thesis-ai-spec.yaml`、`figure-registry.yaml` |
 
-然后按顺序补这 3 个文件：
-
-- `thesis-ai-standard/templates/standard-profile.yaml`
-- `thesis-ai-standard/templates/thesis-ai-spec.yaml`
-- `thesis-ai-standard/templates/figure-registry.yaml`
-
-如果你已经有一份论文 `.docx` 初稿，就直接让 AI 对这份初稿执行一次终稿格式检查。
-
-你只要先做到这 4 步，这个项目就已经进入“可持续推进”的状态了。
+如果你已经有论文 `.docx` 初稿，可以把第 4 步换成“先跑一次终稿格式检查”。
 
 ## 最佳实战路线
 
 如果你是第一次用，推荐直接走这一条，不容易绕路。
+
+| 步骤 | 核心动作 | 重点看什么 |
+| --- | --- | --- |
+| 1 | 初始化工作区 | 模板提取产物 |
+| 2 | 补标准和事实 | 三个核心模板 |
+| 3 | 从项目里抽证据 | `paper-context/evidence/` |
+| 4 | 补文献 | 检索、去重、核验结果 |
+| 5 | 写或改章节 | 先证据后正文 |
+| 6 | 做 AIGC 风格治理 | 检测报告、风格报告、改写计划 |
+| 7 | 做终稿格式收尾 | 模板比对、修复、复检 |
 
 ### 第 1 步：初始化工作区
 
@@ -121,9 +128,16 @@
 
 ### 第 6 步：做 AIGC 风格治理
 
-如果老师会看 AIGC 风格，或者你自己觉得论文太像套话，建议先让 AI 生成检测报告和风格风险报告，再开始定向修改。
+如果老师会看 AIGC 风格，或者你自己觉得论文太像套话，建议先出报告，再出改写计划，再定向修改。
 
-推荐做法：
+| 阶段 | 命令 / 动作 | 产物 |
+| --- | --- | --- |
+| 检测 | `detect_aigc_rate.py` | `aigc-detection-report.md/json` |
+| 风格定位 | `analyze_aigc_style.py` | `aigc-style-report.md/json` |
+| 确定性改写计划 | `build_aigc_revision_plan.py` | `aigc-revision-plan.md/json` |
+| 逐段终稿版 | `analyze_aigc_style.py --final-paragraph-pass-out ...` | `aigc-final-paragraph-pass.md` |
+
+推荐原则：
 
 - 只优先改 `high` / `medium` 风险段落
 - 不为了降风格去牺牲事实和证据
@@ -135,6 +149,7 @@
 
 这个入口会固定跑：
 
+- 交付前预检
 - 工作区检查
 - 模板格式比对
 - 保守自动修复
@@ -151,6 +166,57 @@
 - Roman / Arabic 页码切换是否正确
 - 正文后是否出现异常重启页码
 - `参考文献 / 附录` 这类 back matter 是否延续了模板的页码策略
+
+终稿统一入口现在会先额外生成一份 `paper-context/template-compare/delivery-preflight.md`，在真正开始比对 / 修复前先看几件事：
+
+- 终稿 `.docx` 本身是不是可读的 Word 包
+- `thesis-ai-standard/templates/` 三个核心模板是不是都在并且能解析
+- `paper-context/template-extract/` 的模板提取产物是不是齐
+- `figure-registry.yaml` 里已经标成 `checked / inserted` 的图表条目，是否还在引用明显缺失的本地源文件或导出文件
+- 修订追踪日志是否已经存在
+
+如果你只想单独检查图表资产链路，也可以直接跑：
+
+```powershell
+python .\thesis-standardizer\scripts\check_figure_assets.py --workspace . --out .\paper-context\template-compare\figure-assets-report.md --json-out .\paper-context\template-compare\figure-assets-report.json
+```
+
+这一步会重点检查：
+
+- `checked / inserted` 图表是否真的有可编辑源文件
+- `inserted` 图表是否真的有导出图片文件
+- 导出图片是否小得可疑
+- 图表、表格、公式的证据路径是否还能对上本地材料
+
+## DOCX 工作基线
+
+如果你这次工作的重点就是 Word 终稿，而不是正文内容重写，建议把下面这套基线当成默认规则：
+
+1. 先模板，后改稿
+2. 先提取 OOXML 事实，再做格式判断
+3. 能局部修就不要整篇 round-trip
+4. 修完一定复检，不要凭感觉说“格式已经稳了”
+
+这套仓库当前对 `.docx` 的推荐路径是：
+
+1. 学校模板提取：`extract_docx_template_profile.py`
+2. 模板规则归一化：`generate_template_rule_overrides.py`
+3. 终稿统一检查：`finalize_thesis_delivery.py`
+4. 批注提取续改：`extract_docx_comments.py`
+
+几个很重要的约束：
+
+- 不要因为文件后缀是 `.docx` 就默认它可用，首先它必须是真正可读的 Word OOXML 包
+- 对已经稳定的终稿，不要默认走 markdown / pandoc 整体回灌
+- 页码、目录域、交叉引用、题注锚点这类问题，脚本检查后仍然需要手工 Word/PDF 复核
+- 中文论文常见默认值只能作为 fallback，学校模板和导师规则优先级更高
+
+如果学校没有给出更强规则，这个项目现在采用的中文论文 fallback 心智模型是：
+
+- A4 纸张
+- 四边 2.5cm 页边距
+- 正文字体优先按模板，否则默认按宋体 / 小四理解
+- 标题样式优先按模板，否则常见黑体层级作为弱默认
 
 ## 三个常见起手式
 

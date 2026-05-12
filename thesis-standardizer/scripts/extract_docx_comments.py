@@ -11,6 +11,8 @@ import xml.etree.ElementTree as ET
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
+from docx_io import ensure_readable_docx
+
 
 NS = {
     "w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main",
@@ -178,11 +180,7 @@ def main() -> int:
     parser.add_argument("--out", default="paper-context/word-comments", help="Output directory.")
     args = parser.parse_args()
 
-    docx = Path(args.docx).resolve()
-    if docx.suffix.lower() != ".docx":
-        raise ValueError("Input must be a .docx file.")
-    if not docx.exists():
-        raise FileNotFoundError(docx)
+    docx = ensure_readable_docx(Path(args.docx), "comment source docx")
 
     out = Path(args.out).resolve()
     out.mkdir(parents=True, exist_ok=True)

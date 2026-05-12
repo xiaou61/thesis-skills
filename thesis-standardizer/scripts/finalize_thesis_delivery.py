@@ -8,6 +8,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from docx_io import ensure_readable_docx
+
 
 def run_step(script_dir: Path, name: str, *extra: str, allowed_returncodes: set[int] | None = None) -> int:
     script_path = script_dir / name
@@ -30,6 +32,7 @@ def main() -> int:
     parser.add_argument("--workspace", default=".", help="Workspace root containing thesis-ai-standard and paper-context.")
     parser.add_argument("--template-profile", help="Optional template-profile.json path. Defaults to paper-context/template-extract/template-profile.json.")
     parser.add_argument("--template-rule-overrides", help="Optional template-rule-overrides.yaml path.")
+    parser.add_argument("--skip-delivery-preflight", action="store_true", help="Skip delivery preflight checks before compare/repair.")
     parser.add_argument("--skip-workspace-check", action="store_true", help="Skip thesis-ai-standard workspace validation.")
     parser.add_argument("--out-dir", default="paper-context/template-compare", help="Relative or absolute report directory.")
     parser.add_argument("--out-docx", help="Optional repaired .docx output path.")
@@ -37,17 +40,26 @@ def main() -> int:
 
     workspace = Path(args.workspace).resolve()
     script_dir = Path(__file__).resolve().parent
-    thesis_docx = Path(args.thesis_docx).resolve()
+    thesis_docx = ensure_readable_docx(Path(args.thesis_docx), "thesis docx")
     template_profile, template_rule_overrides = detect_template_inputs(
         workspace, args.template_profile, args.template_rule_overrides
     )
 
-    if not thesis_docx.exists():
-        raise FileNotFoundError(f"thesis .docx not found: {thesis_docx}")
     if not template_profile.exists():
         raise FileNotFoundError(
             "template profile not found. Expected extracted school template profile at "
             f"{template_profile}. Run bootstrap_thesis_project.py --template-docx first or pass --template-profile."
+        )
+
+    if not args.skip_delivery_preflight:
+        run_step(
+            script_dir,
+            "check_delivery_preflight.py",
+            str(thesis_docx),
+            "--workspace",
+            str(workspace),
+            "--out",
+            str(workspace / "paper-context" / "template-compare" / "delivery-preflight.md"),
         )
 
     if not args.skip_workspace_check:

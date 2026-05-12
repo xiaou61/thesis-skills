@@ -104,15 +104,19 @@ For existing chapter drafts or after first drafting:
    ```powershell
    python .\scripts\detect_aigc_rate.py .\chapter-draft.md --out .\paper-context\aigc\aigc-detection-report.md --json-out .\paper-context\aigc\aigc-detection-report.json
    ```
-   State that this is a local heuristic estimate, not an official detector score.
+   State that this is a local heuristic estimate based on `xiaofenggan01/aigc-reduce`, not an official detector score.
 2. Run the local style report:
    ```powershell
    python .\scripts\analyze_aigc_style.py .\chapter-draft.md --out .\paper-context\aigc\aigc-style-report.md --json-out .\paper-context\aigc\aigc-style-report.json
    ```
-3. Read `references/aigc-style-governance.md`.
-4. Update `thesis-ai-standard/templates/aigc-style-review.yaml` or a project copy.
-5. Revise only confirmed high-risk paragraphs.
-6. Mark unsupported claims as `needs_source` or `needs_evidence`.
+3. If you want deterministic execution guidance first, build the revision plan:
+   ```powershell
+   python .\scripts\build_aigc_revision_plan.py .\chapter-draft.md --out .\paper-context\aigc\aigc-revision-plan.md --json-out .\paper-context\aigc\aigc-revision-plan.json
+   ```
+4. Read `references/aigc-style-governance.md`.
+5. Update `thesis-ai-standard/templates/aigc-style-review.yaml` or a project copy.
+6. Revise only confirmed high-risk paragraphs.
+7. Mark unsupported claims as `needs_source` or `needs_evidence`.
 
 For a full-paper final paragraph pass, warn the user first:
 
@@ -126,7 +130,7 @@ Then run:
 python .\scripts\analyze_aigc_style.py .\chapter-draft.md --out .\paper-context\aigc\aigc-style-report.md --json-out .\paper-context\aigc\aigc-style-report.json --final-paragraph-pass-out .\paper-context\aigc\aigc-final-paragraph-pass.md
 ```
 
-Do not describe this as bypassing an AIGC detector. Describe it as academic style and evidence-quality revision.
+Do not describe this as bypassing an AIGC detector. Describe it as academic style and evidence-quality revision using the local `aigc-reduce` workflow.
 
 ## Stop Conditions
 
