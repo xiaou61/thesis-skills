@@ -1,0 +1,78 @@
+schema_version: "1.0"
+language: "zh-CN"
+encoding: "utf-8"
+
+purpose: "记录论文文本 AIGC 率估计、aigc-reduce 扫描维度、段落风险和复测结果"
+
+policy:
+  objective: "用本地启发式报告辅助定位高风险段落和修改优先级"
+  not_objective:
+    - "替代学校或第三方平台检测"
+    - "承诺通过检测或达到某个官方比例"
+    - "把估计值当作学术诚信结论"
+
+inputs:
+  draft_file: "填写待检测正文路径"
+  local_report_md: "paper-context/aigc/aigc-detection-report.md"
+  local_report_json: "paper-context/aigc/aigc-detection-report.json"
+  style_report_md: "paper-context/aigc/aigc-style-report.md"
+
+detection_method:
+  source_inspiration: "xiaofenggan01/aigc-reduce"
+  local_script: "scripts/detect_aigc_rate.py"
+  score_type: "heuristic_estimated_aigc_rate"
+  dimensions:
+    template_phrases:
+      label: "模板句式密度"
+      notes: "综上所述、值得注意的是、相关研究表明等 stock phrase"
+    passive_voice:
+      label: "被动语态标记"
+      notes: "被…测定、通过…验证、采用…进行等抽象表达"
+    burstiness:
+      label: "句长突发性"
+      notes: "句长变化过低时更容易触发 AI 风险"
+    para_symmetry:
+      label: "段落对称性"
+      notes: "连续 3 段以上长度相近"
+    nested_numbers:
+      label: "嵌套编号"
+      notes: "（1）（2）… 等机械编号痕迹"
+    colon_lists:
+      label: "冒号并列结构"
+      notes: "A：…；B：…；C：… 这类骨架"
+    punctuation:
+      label: "标点规律"
+      notes: "特别关注每句逗号数和排列规整度"
+
+review_workflow:
+  - step: "初测"
+    status: "pending | done | skipped"
+    notes: "生成 aigc-detection-report.md/json"
+  - step: "风格定位"
+    status: "pending | done | skipped"
+    notes: "结合 aigc-style-report.md 定位具体套话和证据缺口"
+  - step: "定向修改"
+    status: "pending | done | skipped"
+    notes: "优先改 high/medium 段落，不新增未核验证据"
+  - step: "复测"
+    status: "pending | done | skipped"
+    notes: "比较估计 AIGC 率、触发维度数量和高风险段落数量"
+
+comparison_log:
+  before:
+    estimated_aigc_rate: null
+    overall_risk: ""
+    high_risk_paragraphs: null
+    medium_risk_paragraphs: null
+  after:
+    estimated_aigc_rate: null
+    overall_risk: ""
+    high_risk_paragraphs: null
+    medium_risk_paragraphs: null
+  notes: "填写变化原因和仍需人工复核的位置"
+
+final_checks:
+  - "已声明该结果不是官方检测分数"
+  - "未把估计值写成学校检测结果"
+  - "复测只用于修改优先级和趋势比较"
+  - "修改没有新增虚构来源、数据或项目事实"

@@ -1,0 +1,110 @@
+schema_version: "1.0"
+language: "zh-CN"
+encoding: "utf-8"
+
+purpose: "记录论文正文的 AIGC 风格风险报告、修改计划与证据边界"
+mode: "report_first | targeted_revision | final_paragraph_pass"
+final_paragraph_pass_warning: "AIGC 最终降低版会按论文文本分割后逐段处理。每段先修，再本地检测，再补一轮，最后再拼接全文，极度消耗 token。建议只在终稿或外部报告集中命中时使用。"
+
+policy:
+  objective: "按 aigc-reduce 三轮协议提升学术表达质量、论证密度和事实可追溯性"
+  not_objective:
+    - "承诺规避检测器"
+    - "编造引用、数据、实验或项目事实"
+    - "为了降低风险而损害论文规范"
+
+inputs:
+  draft_file: "填写待检查正文路径"
+  external_report_file: "可选：AIGC 报告 html/pdf/docx 路径"
+  local_detection_report_md: "paper-context/aigc/aigc-detection-report.md"
+  local_report_md: "paper-context/aigc/aigc-style-report.md"
+  local_report_json: "paper-context/aigc/aigc-style-report.json"
+  final_paragraph_pass_md: "paper-context/aigc/aigc-final-paragraph-pass.md"
+
+review_workflow:
+  - step: "先生成报告"
+    status: "pending | done | skipped"
+    notes: "先定位高风险段落，不直接大段重写"
+  - step: "确认修改范围"
+    status: "pending | done | skipped"
+    notes: "轻度润色、段落改写、章节改写或终稿检查"
+  - step: "定向改写"
+    status: "pending | done | skipped"
+    notes: "只改高风险段落，保留事实和引用"
+  - step: "最终逐段降低版"
+    status: "pending | done | skipped"
+    notes: "按段落逐段改写、逐段记录、再拼接全文；极度消耗 token"
+  - step: "复查"
+    status: "pending | done | skipped"
+    notes: "复查公式化表达、证据缺口和引用边界"
+
+risk_patterns:
+  significance_inflation: "至关重要/不可忽视/深远影响/具有重要价值等意义膨胀"
+  synonym_cycling: "同一对象在局部上下文中被叫成 3 种以上术语"
+  rule_of_three: "机械三件套、三段递进、首先其次最后式强迫凑三"
+  copula_avoidance: "体现了/扮演着角色/起到了作用等系词回避"
+  vague_attribution: "有研究表明/学界普遍认为/相关研究指出但无具体来源"
+  formulaic_challenge: "尽管...但仍存在局限性/未来研究可以进一步探讨..."
+  superficial_ing: "从而/进而/由此 连挂造成悬浮式分析"
+  generic_positive: "具有良好的应用前景/重要理论价值与现实意义等空洞结论"
+  emdash_overuse: "单段出现多个破折号"
+  false_ranges: "从宏观到微观/从理论到实践/涵盖从A到B各方面等虚假范围"
+
+hard_constraints:
+  - "模糊归因必须补真实来源或删除"
+  - "不得新增未核验引用、作者、年份、DOI、实验、系统功能或数据"
+  - "不得用空泛意义句替代缺失证据"
+  - "不得把外部 AIGC 检测分数当成事实性结论"
+  - "不得在论文正文暴露 AI 工作流痕迹"
+  - "不得通过错别字、怪标点、刻意口语化伪装人工写作"
+
+revision_log:
+  - paragraph: "第X段"
+    risk_level: "low | medium | high"
+    detected_patterns:
+      - "填写命中的模式"
+    action: "delete | deterministic_replace | split_sentence | add_source | inject_human_feature | anti_ai_audit | keep"
+    evidence_boundary: "事实已确认 | needs_source | needs_evidence"
+    revised: false
+    notes: "说明修改理由"
+
+final_paragraph_pass:
+  paragraph_split_rule: "以自然段为单位；标题、图表题、引用列表不混入正文段落"
+  per_paragraph_output:
+    - "revised_paragraph"
+    - "deterministic_changes"
+    - "human_features_added"
+    - "preserved_facts"
+    - "needs_source"
+    - "needs_evidence"
+  whole_text_aftercare:
+    - "拼接全文后检查段间衔接"
+    - "检查标题、图表编号、引用位置是否稳定"
+    - "复跑本地风格报告并比较 high/medium 风险段落数量"
+    - "将每个实质性段落改写写入 paper-context/workflow/revision-log.md 和 revision-trace.jsonl"
+
+traceability:
+  required: true
+  workflow_log: "paper-context/workflow/revision-log.md"
+  machine_trace: "paper-context/workflow/revision-trace.jsonl"
+  helper_script: "scripts/append_revision_log.py"
+  required_fields:
+    - "location"
+    - "before"
+    - "after"
+    - "change"
+    - "reason"
+    - "evidence"
+    - "files"
+    - "status"
+  notes: "高/中风险段落只要被改写，就必须能追溯到原段落编号、报告命中模式和证据边界"
+
+final_checks:
+  - "未新增未核验事实"
+  - "未新增虚构引用"
+  - "未出现 AI 工作流痕迹"
+  - "模糊归因已删除或补来源"
+  - "空泛意义句已改为具体结论、限制或展望"
+  - "最终逐段版已提示极度消耗 token（如启用）"
+  - "所有实质性改写已写入 revision-log.md 或 revision-trace.jsonl"
+  - "改写说明已记录"
