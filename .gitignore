@@ -1,5 +1,6 @@
 __pycache__/
 *.py[cod]
+node_modules/
 .DS_Store
 Thumbs.db
 
@@ -20,3 +21,4 @@ paper-context/
 # Keep generated exports local.
 exports/
 dist/
+output.docx

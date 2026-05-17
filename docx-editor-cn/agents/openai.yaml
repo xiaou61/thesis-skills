@@ -1,0 +1,6 @@
+interface:
+  display_name: "中文 Word 排版"
+  short_description: "中文学术 DOCX、三线表、公式、题注和 Markdown 转 Word"
+  default_prompt: "Use $docx-editor-cn for Chinese academic Word document work. Prefer scripts/new_doc.js for new documents, use threeLineTable for standard 三线表, use formula helpers for native Word equations, preserve A4 2.5cm margins and Chinese academic typography defaults, and use unpack/edit/pack workflows for existing .docx files."
+policy:
+  allow_implicit_invocation: true
