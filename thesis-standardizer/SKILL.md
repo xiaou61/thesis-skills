@@ -67,6 +67,7 @@ Rules:
   run `scripts/run_aigc_repair_loop.py` first
 - DOCX-sensitive revision:
   read `references/docx-production-rules.md`
+  use bundled `vendor/docx-editor-cn/` for Word creation/editing, three-line tables, formulas, captions, and OOXML unpack/pack/validate
 - Final delivery:
   read `references/quality-gates.md`
   then run `scripts/check_thesis_workspace.py <workspace>`
@@ -108,6 +109,7 @@ Read other templates only when the task needs them.
 - For pasted text, save to a local draft file before running the AIGC loop.
 - Every material change must be written to `revision-log.md` or `revision-trace.jsonl`.
 - For Word-sensitive files, do not rebuild the whole `.docx` unless the user accepts layout risk.
+- For thesis DOCX content creation or low-level Word editing, prefer bundled `vendor/docx-editor-cn` resources over ad hoc markdown/pandoc round-trips.
 - Every figure/table/equation/screenshot must have source, ID, title, first mention, and status.
 - Do not add citations in the abstract unless the school requires it.
 - Each body citation point may cite at most 2 references.
@@ -130,6 +132,19 @@ Read other templates only when the task needs them.
 - `references/workflow-state-management.md`
 - `references/quality-gates.md`
 - `references/docx-production-rules.md`
+
+## Bundled DOCX Layer
+
+When a thesis task reaches actual Word content generation or XML-level editing, switch from the thesis workflow scripts to the bundled `vendor/docx-editor-cn` layer:
+
+- `vendor/docx-editor-cn/SKILL.md`
+- `vendor/docx-editor-cn/scripts/new_doc.js`
+- `vendor/docx-editor-cn/scripts/convert_paper.js`
+- `vendor/docx-editor-cn/scripts/table.py`
+- `vendor/docx-editor-cn/scripts/formula.py`
+- `vendor/docx-editor-cn/scripts/office/unpack.py`
+- `vendor/docx-editor-cn/scripts/office/pack.py`
+- `vendor/docx-editor-cn/scripts/office/validate.py`
 
 ## Main Scripts
 

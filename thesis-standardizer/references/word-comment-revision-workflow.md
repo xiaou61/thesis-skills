@@ -9,7 +9,7 @@ Turn Word comments into a structured revision workflow:
 1. Extract comments.
 2. Convert them into markdown todos.
 3. Plan safe changes.
-4. Modify the document using `thesis-docx`/`docx` rules.
+4. Modify the document using `thesis-standardizer` workflow rules plus bundled `vendor/docx-editor-cn` operations when layout-sensitive editing is needed.
 5. Log each change and verify the document.
 
 ## Extract Comments
@@ -53,9 +53,15 @@ The script extracts comment author, date, text, and the nearest paragraph previe
 
 ## DOCX Editing Rules
 
-- Prefer Microsoft Word automation or the `thesis-docx` skill for layout-sensitive changes.
+- Prefer Microsoft Word automation or the bundled `vendor/docx-editor-cn` layer for layout-sensitive changes.
 - For finalized theses, second-round revisions, or any draft with stable pagination, TOC, figure anchors, or cross-references, do not use pandoc to round-trip the main body back into the original `.docx`.
 - In those layout-sensitive cases, copy the original `.docx` first and revise it in place with paragraph-level or run-level targeted replacement so the document keeps its original section breaks, headers/footers, TOC fields, figure/table anchors, and image layout.
+- When the revision needs XML-level table, formula, comment, or track-change handling, use:
+  `thesis-standardizer/vendor/docx-editor-cn/scripts/office/unpack.py`
+  `thesis-standardizer/vendor/docx-editor-cn/scripts/comment.py`
+  `thesis-standardizer/vendor/docx-editor-cn/scripts/table.py`
+  `thesis-standardizer/vendor/docx-editor-cn/scripts/formula.py`
+  `thesis-standardizer/vendor/docx-editor-cn/scripts/office/pack.py`
 - Treat "rewrite the whole chapter in markdown and pour it back" as a high-risk path. Use it only when the user explicitly accepts format rebuild risk.
 - For content edits, preserve existing styles and section structure.
 - Before applying paragraph-index replacements, verify the target paragraph count and inspect paragraph previews so index drift does not silently overwrite the wrong content.

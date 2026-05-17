@@ -212,6 +212,13 @@ python .\thesis-standardizer\scripts\check_figure_assets.py --workspace . --out 
 3. 终稿统一检查：`finalize_thesis_delivery.py`
 4. 批注提取续改：`extract_docx_comments.py`
 
+真正落到 Word 内容生成或底层 `.docx` 编辑时，再切到内置的 `thesis-standardizer/vendor/docx-editor-cn/`：
+
+1. 新建中文论文版式文档：`vendor/docx-editor-cn/scripts/new_doc.js`
+2. Markdown 转 Word：`vendor/docx-editor-cn/scripts/convert_paper.js`
+3. 三线表 / 公式插入：`vendor/docx-editor-cn/scripts/table.py`、`formula.py`
+4. OOXML 解包 / 回包 / 校验：`vendor/docx-editor-cn/scripts/office/unpack.py`、`pack.py`、`validate.py`
+
 几个很重要的约束：
 
 - 不要因为文件后缀是 `.docx` 就默认它可用，首先它必须是真正可读的 Word OOXML 包
