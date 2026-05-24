@@ -24,3 +24,5 @@ dist/
 
 # Local scratch clones / temp work
 external/
+tmp/
+vendor/

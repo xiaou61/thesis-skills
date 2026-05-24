@@ -1,0 +1,81 @@
+schema_version: "1.0"
+language: "zh-CN"
+encoding: "utf-8"
+
+profile:
+  name: "填写学校或项目标准配置名称"
+  school: "填写学校名称"
+  college: "填写学院名称"
+  major: "填写专业名称"
+  updated_at: "YYYY-MM-DD"
+  status: "draft"
+
+source_priority:
+  - level: 1
+    name: "学校/学院正式论文模板"
+    file_or_url: "填写模板文件路径或网址"
+    enforce: true
+    confirmation_status: "confirmed | needs_confirmation | missing"
+    notes: "字体、页面、标题、目录、页眉页脚、参考文献等以此为准"
+  - level: 2
+    name: "导师要求"
+    file_or_url: "填写要求来源"
+    enforce: true
+    confirmation_status: "confirmed | needs_confirmation | missing"
+    notes: "章节取舍、重点图表、系统演示范围"
+  - level: 3
+    name: "通用默认规则"
+    file_or_url: "thesis-standardizer defaults"
+    enforce: false
+    confirmation_status: "fallback"
+    notes: "仅在学校和导师没有明确要求时使用"
+
+format_defaults:
+  paper_size: "A4"
+  page_margin: "按学校模板；未知时不自动修改"
+  body_font: "按学校模板；未知时不自动修改"
+  body_size: "按学校模板；未知时不自动修改"
+  heading_numbering: "按学校模板；未知时使用按章编号"
+  figure_caption_position: "图题置于图下"
+  table_caption_position: "表题置于表上"
+  table_style: "三线表优先"
+  reference_style: "按学校要求；未知时使用 GB/T 7714"
+
+content_rules:
+  abstract:
+    required: true
+    notes:
+      - "说明背景、目的、系统方案、实现内容和结论"
+      - "默认不放图表、公式和参考文献标注，除非学校模板要求"
+  keywords:
+    default_count: "3-5"
+  conclusion:
+    notes:
+      - "总结已完成工作"
+      - "不新增正文没有展开的新功能或测试结果"
+
+integrity_rules:
+  forbid:
+    - "编造系统功能"
+    - "编造接口路径"
+    - "编造数据库字段"
+    - "编造测试结果"
+    - "编造参考文献或 DOI"
+    - "编造学校格式要求"
+    - "在正文暴露 AI 协作过程"
+  require:
+    - "所有图表有证据来源"
+    - "所有测试结论有记录或截图支撑"
+    - "参考文献必须真实可核验"
+
+review_policy:
+  before_generation:
+    - "读取本文件"
+    - "读取 thesis-ai-spec.yaml"
+    - "读取 figure-registry.yaml"
+    - "读取 paper-context/evidence/"
+  before_delivery:
+    - "检查章节结构"
+    - "检查图表编号"
+    - "检查证据链"
+    - "检查 Word 或 PDF 页面效果"
