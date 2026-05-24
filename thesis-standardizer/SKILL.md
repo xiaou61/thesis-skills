@@ -1,192 +1,106 @@
 ---
 name: thesis-standardizer
-description: Standardize and draft undergraduate thesis or graduation-design papers from source code, school templates, task books, drafts, screenshots, databases, APIs, experiments, literature, PDFs, and test evidence. Use for thesis writing, checking, packaging, literature workflows, citation closure, AIGC style reduction, and school-rule enforcement.
+description: Generate and standardize an undergraduate system-design thesis from a real program/project. Use when the user provides source code, a repo, database/API evidence, screenshots, a school template, or asks for thesis drafting, chapter generation, Visio thesis diagrams, three-line tables, final Word checks, or standalone AIGC style reduction.
 ---
 
 # Thesis Standardizer
 
-## Core Rule
+## Purpose
 
-Treat the thesis as an evidence project.
+Default to one main job: turn a real program into a defensible undergraduate thesis.
 
-Work in this order:
+Always work from evidence:
 
-1. standards
-2. facts
-3. evidence
+1. template rules
+2. project facts
+3. code/database/API/test evidence
 4. chapter plan
 5. prose
-6. Word/PDF review
+6. figures/tables
+7. Word/PDF checks
 
-Do not start from free prose.
+Do not start from free prose unless the user explicitly asks for a rough draft and accepts missing evidence risk.
 
-## AIGC Fast Path
+## Mainline: Program To Thesis
 
-Use this first for requests like:
+For a project/repo/system source, run this route:
 
-- `降 AIGC`
-- `降低 AI 味`
-- `大白话一点`
-- `一段一段修`
-- `修完先测`
+1. If a school `.docx` template exists, extract it:
+   `scripts/extract_docx_template_profile.py <template.docx> --out paper-context/template-extract`
+2. Initialize/check the thesis workspace:
+   `scripts/init_thesis_workspace.py <target-dir>`
+3. Build project evidence:
+   `scripts/build_project_evidence.py <project-dir> --out paper-context/evidence`
+4. Fill or update:
+   `thesis-ai-standard/templates/standard-profile.yaml`
+   `thesis-ai-standard/templates/thesis-ai-spec.yaml`
+   `thesis-ai-standard/templates/figure-registry.yaml`
+5. Draft by chapter using the chapter map below.
+6. Generate required Visio diagrams and three-line tables only when the chapter needs them.
+7. Run final checks:
+   `scripts/check_thesis_workspace.py <workspace>`
 
-Steps:
+Read `references/thesis-module-workflow.md` when planning or executing the full route.
 
-1. Make a local draft file.
-2. Run `scripts/run_aigc_repair_loop.py <draft-file> --workspace <workspace>`.
-3. Round 1: revise only high-risk paragraphs.
-4. Run the same loop again.
-5. Round 2: revise only remaining high/medium-risk paragraphs.
-6. If needed, use `paper-context/aigc/aigc-final-paragraph-pass.md`.
+## Chapter Map
+
+- Chapter 1, introduction: background, significance, research status, research content, thesis structure. This is citation-heavy.
+- Chapter 2, related technologies: explain each technology and how this system uses it. This is citation-heavy.
+- Chapter 3, system analysis: feasibility, roles, requirements, non-functional requirements, use-case diagram.
+- Chapter 4, design and implementation: function architecture diagram, E-R overview, single-entity E-R diagrams, database three-line tables, key module implementation.
+- Chapter 5, testing: test environment, cases, screenshots/logs, result tables. No special diagram by default.
+- Chapter 6, conclusion: completed work, limitations, future work. No special diagram by default.
+
+Chapters 1-3 are the main citation area. Do not force citations into implementation or test claims unless the claim genuinely needs literature support.
+
+## Diagram And Table Routing
+
+- Use-case diagram: `references/visio-use-case-workflow.md`
+  Run `layout_use_case_diagram.py`, `check_use_case_layout.py`, `generate_visio_use_case_diagram.ps1`.
+- Function architecture diagram: `references/visio-function-architecture-workflow.md`
+  Run `layout_function_architecture_diagram.py`, `check_function_architecture_layout.py`, `generate_visio_function_architecture_diagram.ps1`.
+- E-R diagram: `references/visio-diagram-workflow.md`
+  Run `layout_er_diagram.py`, `check_er_layout.py`, `generate_visio_er_diagram.ps1`.
+- Flowchart: `references/visio-flowchart-workflow.md`
+  Run `layout_flowchart_diagram.py`, `check_flowchart_layout.py`, `generate_visio_flowchart_diagram.ps1`.
+- Three-line tables / Word-sensitive tables: read `references/docx-production-rules.md`, then use `vendor/docx-editor-cn/scripts/table.py` or the bundled DOCX layer.
+
+Keep editable sources: `.vsdx` for Visio figures, `.drawio` for draw.io figures, and `.docx`/script source for final tables.
+
+## AIGC Is Standalone
+
+Only run AIGC reduction when the user asks for it, such as `降 AIGC`, `降低 AI 味`, `一段一段修`, or `修完先测`.
+
+Default command:
+
+```powershell
+python .\thesis-standardizer\scripts\run_aigc_repair_loop.py .\chapter-draft.md --workspace .
+```
 
 Rules:
 
-- No direct free rewriting before the script loop.
-- Explain problems in plain Chinese.
-- If the text was pasted in chat, save it to a local file first.
-
-## Fast Routing
-
-- Missing thesis workspace or templates:
-  run `scripts/init_thesis_workspace.py <target-dir>`
-- Program/source-code thesis:
-  read `references/source-to-thesis-workflow.md`
-  then run `scripts/build_project_evidence.py <project-dir> --out paper-context/evidence`
-- Literature search / full-text collection:
-  read `references/literature-harvest-workflow.md`
-- PDF literature / citation extraction:
-  read `references/literature-and-pdf-workflow.md`
-- AIGC rate / detector-style report:
-  read `references/aigc-detection-workflow.md`
-  then run `scripts/detect_aigc_rate.py`
-- AIGC reduction:
-  use `AIGC Fast Path`
-- AIGC plan only:
-  run `scripts/build_aigc_revision_plan.py`
-- Final AIGC paragraph-by-paragraph pass:
-  run `scripts/run_aigc_repair_loop.py` first
-- DOCX-sensitive revision:
-  read `references/docx-production-rules.md`
-  use bundled `vendor/docx-editor-cn/` for Word creation/editing, three-line tables, formulas, captions, and OOXML unpack/pack/validate
-- Visio ER diagram generation:
-  read `references/visio-diagram-workflow.md`
-  then run `scripts/layout_er_diagram.py`, `scripts/generate_visio_er_diagram.ps1`, and `scripts/check_er_layout.py`
-- Visio use-case diagram generation:
-  read `references/visio-use-case-workflow.md`
-  then run `scripts/layout_use_case_diagram.py`, `scripts/check_use_case_layout.py`, and `scripts/generate_visio_use_case_diagram.ps1`
-- Visio flowchart generation:
-  read `references/visio-flowchart-workflow.md`
-  then run `scripts/layout_flowchart_diagram.py`, `scripts/check_flowchart_layout.py`, and `scripts/generate_visio_flowchart_diagram.ps1`
-- Visio function architecture / function structure generation:
-  read `references/visio-function-architecture-workflow.md`
-  then run `scripts/layout_function_architecture_diagram.py`, `scripts/check_function_architecture_layout.py`, and `scripts/generate_visio_function_architecture_diagram.ps1`
-- Final delivery:
-  read `references/quality-gates.md`
-  then run `scripts/check_thesis_workspace.py <workspace>`
-
-## Minimal Contracts
-
-| Request | Read | Run | Deliver |
-| --- | --- | --- | --- |
-| program -> thesis | `source-to-thesis-workflow.md` | `build_project_evidence.py` | evidence index, missing materials, chapter plan |
-| find papers | `literature-harvest-workflow.md` | harvest scripts | candidate table, downloaded files, verified selection |
-| handle PDF literature | `literature-and-pdf-workflow.md` | `extract_pdf_references.py`, `build_literature_crossrefs.py` | candidate references, cross-reference index |
-| detect AIGC | `aigc-detection-workflow.md` | `detect_aigc_rate.py` | local estimate, paragraph risk findings |
-| lower AIGC | `aigc-style-governance.md` | `run_aigc_repair_loop.py` | `先跑脚本 -> 改高风险段 -> 本地复查 -> 再补一轮` |
-| build AIGC plan | `aigc-style-governance.md` | `build_aigc_revision_plan.py` | paragraph actions |
-| final AIGC pass | `aigc-style-governance.md` | `run_aigc_repair_loop.py` | final paragraph work order |
-| final check | `quality-gates.md` | `check_thesis_workspace.py` | critical / major / minor findings |
-
-## Required Reads
-
-When `thesis-ai-standard/` exists, read only these first:
-
-1. `thesis-ai-standard/README.md`
-2. `thesis-ai-standard/templates/standard-profile.yaml`
-3. `thesis-ai-standard/templates/thesis-ai-spec.yaml`
-4. `thesis-ai-standard/templates/figure-registry.yaml`
-
-Read other templates only when the task needs them.
+- Save pasted text to a local draft file first.
+- Revise high-risk paragraphs first.
+- Preserve facts, citations, numbers, figures, tables, and evidence boundaries.
+- Do not describe the work as detector bypass.
 
 ## Hard Rules
 
-- School and advisor rules override bundled defaults.
-- Never invent facts, code behavior, APIs, tables, screenshots, experiments, citations, DOI values, or school requirements.
-- Never expose AI workflow language in thesis body text.
-- Never frame AIGC work as detector bypass.
-- AIGC-rate output is a local heuristic estimate, not an official school or third-party score.
-- For AIGC reduction, run `run_aigc_repair_loop.py` before rewriting.
-- For final paragraph-by-paragraph AIGC pass, explicitly warn that it is token-heavy.
-- For plainer writing, use everyday Chinese.
-- For pasted text, save to a local draft file before running the AIGC loop.
-- Every material change must be written to `revision-log.md` or `revision-trace.jsonl`.
-- For Word-sensitive files, do not rebuild the whole `.docx` unless the user accepts layout risk.
-- For thesis DOCX content creation or low-level Word editing, prefer bundled `vendor/docx-editor-cn` resources over ad hoc markdown/pandoc round-trips.
-- Every figure/table/equation/screenshot must have source, ID, title, first mention, and status.
-- Do not add citations in the abstract unless the school requires it.
-- Each body citation point may cite at most 2 references.
+- School and advisor rules override defaults.
+- Never invent project functions, APIs, database fields, tests, screenshots, experiments, citations, DOI values, or school rules.
+- If evidence is missing, list missing materials instead of pretending.
+- Every figure/table/equation/screenshot must have a source file, export file when applicable, first mention, and status in `figure-registry.yaml`.
+- Do not expose AI workflow language in thesis prose.
+- For stable `.docx` files, avoid whole-document markdown round trips unless the user accepts layout risk.
 
-## Default Thesis Rules
+## Minimal Reads
 
-- Default literature selection: Chinese `12-15`, English `3-5`, unless school/user rules override.
-- Default literature year range: recent 6 years based on the user's current year, unless school/user rules override.
-- Stop and mark missing evidence when a claim is unsupported.
-- Draft chapter by chapter, not full freeform thesis dumping.
+When `thesis-ai-standard/` exists, read these first and stop unless more detail is needed:
 
-## Must-Use References
+1. `thesis-ai-standard/templates/standard-profile.yaml`
+2. `thesis-ai-standard/templates/thesis-ai-spec.yaml`
+3. `thesis-ai-standard/templates/figure-registry.yaml`
+4. `paper-context/evidence/`, if present
+5. `paper-context/template-extract/template-rule-overrides.yaml`, if present
 
-- `references/standards-and-template-resolution.md`
-- `references/source-to-thesis-workflow.md`
-- `references/literature-harvest-workflow.md`
-- `references/literature-and-pdf-workflow.md`
-- `references/aigc-detection-workflow.md`
-- `references/aigc-style-governance.md`
-- `references/workflow-state-management.md`
-- `references/quality-gates.md`
-- `references/docx-production-rules.md`
-- `references/visio-diagram-workflow.md`
-- `references/visio-use-case-workflow.md`
-- `references/visio-flowchart-workflow.md`
-- `references/visio-function-architecture-workflow.md`
-
-## Bundled DOCX Layer
-
-When a thesis task reaches actual Word content generation or XML-level editing, switch from the thesis workflow scripts to the bundled `vendor/docx-editor-cn` layer:
-
-- `vendor/docx-editor-cn/SKILL.md`
-- `vendor/docx-editor-cn/scripts/new_doc.js`
-- `vendor/docx-editor-cn/scripts/convert_paper.js`
-- `vendor/docx-editor-cn/scripts/table.py`
-- `vendor/docx-editor-cn/scripts/formula.py`
-- `vendor/docx-editor-cn/scripts/office/unpack.py`
-- `vendor/docx-editor-cn/scripts/office/pack.py`
-- `vendor/docx-editor-cn/scripts/office/validate.py`
-
-## Main Scripts
-
-- `scripts/init_thesis_workspace.py`
-- `scripts/build_project_evidence.py`
-- `scripts/generate_literature_search_config.py`
-- `scripts/run_keyword_harvest_no_dedup.py`
-- `scripts/continue_download_and_dedup.py`
-- `scripts/verify_select_literature.py`
-- `scripts/extract_pdf_references.py`
-- `scripts/build_literature_crossrefs.py`
-- `scripts/check_thesis_workspace.py`
-- `scripts/layout_er_diagram.py`
-- `scripts/check_er_layout.py`
-- `scripts/generate_visio_er_diagram.ps1`
-- `scripts/layout_use_case_diagram.py`
-- `scripts/check_use_case_layout.py`
-- `scripts/generate_visio_use_case_diagram.ps1`
-- `scripts/layout_flowchart_diagram.py`
-- `scripts/check_flowchart_layout.py`
-- `scripts/generate_visio_flowchart_diagram.ps1`
-- `scripts/layout_function_architecture_diagram.py`
-- `scripts/check_function_architecture_layout.py`
-- `scripts/generate_visio_function_architecture_diagram.ps1`
-- `scripts/detect_aigc_rate.py`
-- `scripts/analyze_aigc_style.py`
-- `scripts/build_aigc_revision_plan.py`
-- `scripts/run_aigc_repair_loop.py`
-- `scripts/append_revision_log.py`
+Use deeper reference files only for the active task.
