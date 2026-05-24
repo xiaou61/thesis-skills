@@ -219,6 +219,16 @@ powershell -ExecutionPolicy Bypass -File .\thesis-standardizer\scripts\generate_
 
 流程图支持开始/结束、处理、判断、数据库/文档节点，普通箭头和返回回路箭头都会保留为可编辑 Visio 图形。
 
+如果要生成论文模板里常见的“系统功能结构图 / 功能架构图”，可以准备 `function_architecture` 类型的 `function-architecture-model.json`，再跑：
+
+```powershell
+python .\thesis-standardizer\scripts\layout_function_architecture_diagram.py .\paper-context\evidence\function-architecture-model.json --out .\paper-context\evidence\function-architecture-model.positioned.json
+python .\thesis-standardizer\scripts\check_function_architecture_layout.py .\paper-context\evidence\function-architecture-model.positioned.json
+powershell -ExecutionPolicy Bypass -File .\thesis-standardizer\scripts\generate_visio_function_architecture_diagram.ps1 -InputJson .\paper-context\evidence\function-architecture-model.positioned.json -OutputVsdx .\thesis-ai-standard\visio\function-architecture-diagram.vsdx -OutputPng .\thesis-ai-standard\exports\function-architecture-diagram.png
+```
+
+功能架构图会按图4-1这类模板样式生成“系统根节点 + 前台/后台模块 + 角色/模块功能叶子”的树状结构，窄竖框和黑白树线都保留为可编辑 Visio 图形。
+
 这一步会重点检查：
 
 - `checked / inserted` 图表是否真的有可编辑源文件

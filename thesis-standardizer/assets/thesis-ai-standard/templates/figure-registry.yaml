@@ -16,6 +16,7 @@ rules:
   source_policy:
     editable_source_required:
       - "architecture"
+      - "function_architecture"
       - "flowchart"
       - "use_case"
       - "er_diagram"
@@ -47,7 +48,7 @@ figures:
   - id: "图X-1"
     title: "填写图题"
     chapter: "X"
-    type: "architecture | flowchart | er_diagram | sequence | use_case | model | data_structure | ui_screenshot | experiment_screenshot | test_report | other"
+    type: "architecture | function_architecture | flowchart | er_diagram | sequence | use_case | model | data_structure | ui_screenshot | experiment_screenshot | test_report | other"
     purpose: "说明该图解决什么表达问题"
     source_kind: "drawio | visio | mermaid | screenshot | chart_export | software_output | other"
     source_file: "drawio/figure-X-1-name.drawio 或 visio/figure-X-1-name.vsdx"
@@ -103,6 +104,7 @@ diagram_style_defaults:
   er_overview_limits: "总E-R图优先限量展示核心实体、代表属性和主关系；完整字段放到单实体E-R图或数据库表"
   use_case_defaults: "用例图优先保留Visio可编辑源文件；单角色图左右分列，多角色通用功能图使用系统边界框"
   flowchart_defaults: "流程图优先保留Visio可编辑源文件；登录、添加、删除等流程用竖向紧凑布局，业务流程可用横向分支布局"
+  function_architecture_defaults: "功能架构图优先保留Visio可编辑源文件；按系统根节点、前后台模块、角色或模块分组和竖向功能叶子组织，模块过多时拆分子图"
   fill_policy:
     primary_module: "浅蓝或蓝灰"
     data_layer: "浅绿"

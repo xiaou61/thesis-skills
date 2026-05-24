@@ -77,6 +77,9 @@ Rules:
 - Visio flowchart generation:
   read `references/visio-flowchart-workflow.md`
   then run `scripts/layout_flowchart_diagram.py`, `scripts/check_flowchart_layout.py`, and `scripts/generate_visio_flowchart_diagram.ps1`
+- Visio function architecture / function structure generation:
+  read `references/visio-function-architecture-workflow.md`
+  then run `scripts/layout_function_architecture_diagram.py`, `scripts/check_function_architecture_layout.py`, and `scripts/generate_visio_function_architecture_diagram.ps1`
 - Final delivery:
   read `references/quality-gates.md`
   then run `scripts/check_thesis_workspace.py <workspace>`
@@ -144,6 +147,7 @@ Read other templates only when the task needs them.
 - `references/visio-diagram-workflow.md`
 - `references/visio-use-case-workflow.md`
 - `references/visio-flowchart-workflow.md`
+- `references/visio-function-architecture-workflow.md`
 
 ## Bundled DOCX Layer
 
@@ -178,6 +182,9 @@ When a thesis task reaches actual Word content generation or XML-level editing, 
 - `scripts/layout_flowchart_diagram.py`
 - `scripts/check_flowchart_layout.py`
 - `scripts/generate_visio_flowchart_diagram.ps1`
+- `scripts/layout_function_architecture_diagram.py`
+- `scripts/check_function_architecture_layout.py`
+- `scripts/generate_visio_function_architecture_diagram.ps1`
 - `scripts/detect_aigc_rate.py`
 - `scripts/analyze_aigc_style.py`
 - `scripts/build_aigc_revision_plan.py`
