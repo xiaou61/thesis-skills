@@ -1,0 +1,195 @@
+{
+  "diagramType": "use_case",
+  "title": "管理员用例图 Demo",
+  "layout": {
+    "mode": "single_actor_radial",
+    "pageWidth": 7.2,
+    "pageHeight": 6.04
+  },
+  "actors": [
+    {
+      "id": "admin",
+      "name": "管理员",
+      "useCases": [
+        "系统首页",
+        "用户",
+        "贫困农户",
+        "产品分类",
+        "农产品助销",
+        "扶贫政策",
+        "扶贫成果",
+        "爱心人士",
+        "爱心捐赠",
+        "申请农户",
+        "系统管理",
+        "订单管理",
+        "用户信息"
+      ],
+      "x": 3.6,
+      "y": 3.02,
+      "width": 0.72,
+      "height": 1.25
+    }
+  ],
+  "useCases": [
+    {
+      "id": "系统首页",
+      "name": "系统首页",
+      "x": 0.95,
+      "y": 5.39,
+      "width": 1.65,
+      "height": 0.48
+    },
+    {
+      "id": "用户",
+      "name": "用户",
+      "x": 6.25,
+      "y": 5.39,
+      "width": 1.65,
+      "height": 0.48
+    },
+    {
+      "id": "贫困农户",
+      "name": "贫困农户",
+      "x": 0.95,
+      "y": 4.6,
+      "width": 1.65,
+      "height": 0.48
+    },
+    {
+      "id": "产品分类",
+      "name": "产品分类",
+      "x": 6.25,
+      "y": 4.6,
+      "width": 1.65,
+      "height": 0.48
+    },
+    {
+      "id": "农产品助销",
+      "name": "农产品助销",
+      "x": 0.95,
+      "y": 3.81,
+      "width": 1.65,
+      "height": 0.48
+    },
+    {
+      "id": "扶贫政策",
+      "name": "扶贫政策",
+      "x": 6.25,
+      "y": 3.81,
+      "width": 1.65,
+      "height": 0.48
+    },
+    {
+      "id": "扶贫成果",
+      "name": "扶贫成果",
+      "x": 0.95,
+      "y": 3.02,
+      "width": 1.65,
+      "height": 0.48
+    },
+    {
+      "id": "爱心人士",
+      "name": "爱心人士",
+      "x": 6.25,
+      "y": 3.02,
+      "width": 1.65,
+      "height": 0.48
+    },
+    {
+      "id": "爱心捐赠",
+      "name": "爱心捐赠",
+      "x": 0.95,
+      "y": 2.23,
+      "width": 1.65,
+      "height": 0.48
+    },
+    {
+      "id": "申请农户",
+      "name": "申请农户",
+      "x": 6.25,
+      "y": 2.23,
+      "width": 1.65,
+      "height": 0.48
+    },
+    {
+      "id": "系统管理",
+      "name": "系统管理",
+      "x": 0.95,
+      "y": 1.44,
+      "width": 1.65,
+      "height": 0.48
+    },
+    {
+      "id": "订单管理",
+      "name": "订单管理",
+      "x": 6.25,
+      "y": 1.44,
+      "width": 1.65,
+      "height": 0.48
+    },
+    {
+      "id": "用户信息",
+      "name": "用户信息",
+      "x": 0.95,
+      "y": 0.65,
+      "width": 1.65,
+      "height": 0.48
+    }
+  ],
+  "associations": [
+    {
+      "actor": "admin",
+      "useCase": "系统首页"
+    },
+    {
+      "actor": "admin",
+      "useCase": "用户"
+    },
+    {
+      "actor": "admin",
+      "useCase": "贫困农户"
+    },
+    {
+      "actor": "admin",
+      "useCase": "产品分类"
+    },
+    {
+      "actor": "admin",
+      "useCase": "农产品助销"
+    },
+    {
+      "actor": "admin",
+      "useCase": "扶贫政策"
+    },
+    {
+      "actor": "admin",
+      "useCase": "扶贫成果"
+    },
+    {
+      "actor": "admin",
+      "useCase": "爱心人士"
+    },
+    {
+      "actor": "admin",
+      "useCase": "爱心捐赠"
+    },
+    {
+      "actor": "admin",
+      "useCase": "申请农户"
+    },
+    {
+      "actor": "admin",
+      "useCase": "系统管理"
+    },
+    {
+      "actor": "admin",
+      "useCase": "订单管理"
+    },
+    {
+      "actor": "admin",
+      "useCase": "用户信息"
+    }
+  ],
+  "dependencies": []
+}

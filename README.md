@@ -199,6 +199,26 @@ powershell -ExecutionPolicy Bypass -File .\thesis-standardizer\scripts\generate_
 `overview` 总图默认会限量展示核心内容：最多 8 个实体、每个实体最多 4 个代表属性、最多 8 条关系；被省略的实体、属性和关系会写入 `layoutNotes`，方便再生成单实体 E-R 图或数据库表设计。
 临时预览更清爽版本时，可以给布局脚本追加 `--max-entities`、`--max-attributes-per-entity` 或 `--max-relationships`。
 
+如果要生成论文常用的可编辑 Visio 用例图，可以准备 `use_case` 类型的 `use-case-model.json`，再跑：
+
+```powershell
+python .\thesis-standardizer\scripts\layout_use_case_diagram.py .\paper-context\evidence\use-case-model.json --out .\paper-context\evidence\use-case-model.positioned.json
+python .\thesis-standardizer\scripts\check_use_case_layout.py .\paper-context\evidence\use-case-model.positioned.json
+powershell -ExecutionPolicy Bypass -File .\thesis-standardizer\scripts\generate_visio_use_case_diagram.ps1 -InputJson .\paper-context\evidence\use-case-model.positioned.json -OutputVsdx .\thesis-ai-standard\visio\use-case-diagram.vsdx -OutputPng .\thesis-ai-standard\exports\use-case-diagram.png
+```
+
+用例图支持单角色左右分列、单角色左侧布局、多角色系统边界框、虚线依赖关系，输出同样保留 `.vsdx` 可编辑源文件。
+
+如果要生成论文常用的可编辑 Visio 流程图，可以准备 `flowchart` 类型的 `flowchart-model.json`，再跑：
+
+```powershell
+python .\thesis-standardizer\scripts\layout_flowchart_diagram.py .\paper-context\evidence\flowchart-model.json --out .\paper-context\evidence\flowchart-model.positioned.json
+python .\thesis-standardizer\scripts\check_flowchart_layout.py .\paper-context\evidence\flowchart-model.positioned.json
+powershell -ExecutionPolicy Bypass -File .\thesis-standardizer\scripts\generate_visio_flowchart_diagram.ps1 -InputJson .\paper-context\evidence\flowchart-model.positioned.json -OutputVsdx .\thesis-ai-standard\visio\flowchart-diagram.vsdx -OutputPng .\thesis-ai-standard\exports\flowchart-diagram.png
+```
+
+流程图支持开始/结束、处理、判断、数据库/文档节点，普通箭头和返回回路箭头都会保留为可编辑 Visio 图形。
+
 这一步会重点检查：
 
 - `checked / inserted` 图表是否真的有可编辑源文件

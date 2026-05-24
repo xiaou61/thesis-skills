@@ -71,6 +71,12 @@ Rules:
 - Visio ER diagram generation:
   read `references/visio-diagram-workflow.md`
   then run `scripts/layout_er_diagram.py`, `scripts/generate_visio_er_diagram.ps1`, and `scripts/check_er_layout.py`
+- Visio use-case diagram generation:
+  read `references/visio-use-case-workflow.md`
+  then run `scripts/layout_use_case_diagram.py`, `scripts/check_use_case_layout.py`, and `scripts/generate_visio_use_case_diagram.ps1`
+- Visio flowchart generation:
+  read `references/visio-flowchart-workflow.md`
+  then run `scripts/layout_flowchart_diagram.py`, `scripts/check_flowchart_layout.py`, and `scripts/generate_visio_flowchart_diagram.ps1`
 - Final delivery:
   read `references/quality-gates.md`
   then run `scripts/check_thesis_workspace.py <workspace>`
@@ -136,6 +142,8 @@ Read other templates only when the task needs them.
 - `references/quality-gates.md`
 - `references/docx-production-rules.md`
 - `references/visio-diagram-workflow.md`
+- `references/visio-use-case-workflow.md`
+- `references/visio-flowchart-workflow.md`
 
 ## Bundled DOCX Layer
 
@@ -164,6 +172,12 @@ When a thesis task reaches actual Word content generation or XML-level editing, 
 - `scripts/layout_er_diagram.py`
 - `scripts/check_er_layout.py`
 - `scripts/generate_visio_er_diagram.ps1`
+- `scripts/layout_use_case_diagram.py`
+- `scripts/check_use_case_layout.py`
+- `scripts/generate_visio_use_case_diagram.ps1`
+- `scripts/layout_flowchart_diagram.py`
+- `scripts/check_flowchart_layout.py`
+- `scripts/generate_visio_flowchart_diagram.ps1`
 - `scripts/detect_aigc_rate.py`
 - `scripts/analyze_aigc_style.py`
 - `scripts/build_aigc_revision_plan.py`

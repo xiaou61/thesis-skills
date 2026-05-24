@@ -1,0 +1,33 @@
+{
+  "diagramType": "flowchart",
+  "title": "系统核心业务流程图 Demo",
+  "layout": {
+    "direction": "TB",
+    "pageWidth": 7.4,
+    "pageHeight": 4.8,
+    "rankGap": 0.76,
+    "columnGap": 1.9
+  },
+  "nodes": [
+    {"id": "start", "type": "start", "text": "开始", "rank": 0, "column": -2},
+    {"id": "login", "type": "process", "text": "登录/恢复会话", "rank": 0, "column": -1},
+    {"id": "home", "type": "process", "text": "进入核心场景", "rank": 0, "column": 0},
+    {"id": "decision", "type": "decision", "text": "是否执行核心操作？", "rank": 0, "column": 1},
+    {"id": "submit", "type": "process", "text": "填写表单并提交", "rank": 0, "column": 2},
+    {"id": "save", "type": "process", "text": "服务端处理并保存", "rank": 0, "column": 3},
+    {"id": "interact", "type": "process", "text": "查看/筛选/反馈", "rank": 1, "column": 2},
+    {"id": "record", "type": "process", "text": "记录结果更新状态", "rank": 1, "column": 3},
+    {"id": "end", "type": "end", "text": "结束", "rank": 2, "column": 3}
+  ],
+  "edges": [
+    {"from": "start", "to": "login"},
+    {"from": "login", "to": "home"},
+    {"from": "home", "to": "decision"},
+    {"from": "decision", "to": "submit", "label": "是"},
+    {"from": "submit", "to": "save"},
+    {"from": "decision", "to": "interact", "label": "否"},
+    {"from": "interact", "to": "record"},
+    {"from": "save", "to": "end"},
+    {"from": "record", "to": "end"}
+  ]
+}
