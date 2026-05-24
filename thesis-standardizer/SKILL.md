@@ -68,6 +68,9 @@ Rules:
 - DOCX-sensitive revision:
   read `references/docx-production-rules.md`
   use bundled `vendor/docx-editor-cn/` for Word creation/editing, three-line tables, formulas, captions, and OOXML unpack/pack/validate
+- Visio ER diagram generation:
+  read `references/visio-diagram-workflow.md`
+  then run `scripts/layout_er_diagram.py`, `scripts/generate_visio_er_diagram.ps1`, and `scripts/check_er_layout.py`
 - Final delivery:
   read `references/quality-gates.md`
   then run `scripts/check_thesis_workspace.py <workspace>`
@@ -132,6 +135,7 @@ Read other templates only when the task needs them.
 - `references/workflow-state-management.md`
 - `references/quality-gates.md`
 - `references/docx-production-rules.md`
+- `references/visio-diagram-workflow.md`
 
 ## Bundled DOCX Layer
 
@@ -157,6 +161,9 @@ When a thesis task reaches actual Word content generation or XML-level editing, 
 - `scripts/extract_pdf_references.py`
 - `scripts/build_literature_crossrefs.py`
 - `scripts/check_thesis_workspace.py`
+- `scripts/layout_er_diagram.py`
+- `scripts/check_er_layout.py`
+- `scripts/generate_visio_er_diagram.ps1`
 - `scripts/detect_aigc_rate.py`
 - `scripts/analyze_aigc_style.py`
 - `scripts/build_aigc_revision_plan.py`

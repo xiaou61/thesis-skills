@@ -1,0 +1,41 @@
+{
+  "diagramType": "single_entity",
+  "title": "农户信息E-R图 Demo",
+  "entity": {
+    "name": "农户信息",
+    "attributes": [
+      {
+        "name": "农户账号",
+        "key": true,
+        "dx": -2.356,
+        "dy": -0.697
+      },
+      {
+        "name": "农户姓名",
+        "dx": -1.397,
+        "dy": -1.392
+      },
+      {
+        "name": "性别",
+        "dx": -0.0,
+        "dy": -1.65
+      },
+      {
+        "name": "农户电话",
+        "dx": 1.397,
+        "dy": -1.392
+      },
+      {
+        "name": "头像",
+        "dx": 2.356,
+        "dy": -0.697
+      }
+    ]
+  },
+  "layout": {
+    "pageWidth": 6.6,
+    "pageHeight": 3.4,
+    "entityX": 3.3,
+    "entityY": 2.78
+  }
+}

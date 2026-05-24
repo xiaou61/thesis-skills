@@ -1,0 +1,14 @@
+{
+  "diagramType": "single_entity",
+  "title": "农户信息E-R图 Demo",
+  "entity": {
+    "name": "农户信息",
+    "attributes": [
+      {"name": "农户账号", "key": true},
+      {"name": "农户姓名"},
+      {"name": "性别"},
+      {"name": "农户电话"},
+      {"name": "头像"}
+    ]
+  }
+}

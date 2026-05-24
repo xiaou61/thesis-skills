@@ -189,6 +189,16 @@ AIGC降低 突破**维普**4.30新模型
 python .\thesis-standardizer\scripts\check_figure_assets.py --workspace . --out .\paper-context\template-compare\figure-assets-report.md --json-out .\paper-context\template-compare\figure-assets-report.json
 ```
 
+如果要生成论文常用的可编辑 Visio E-R 图，可以准备 `single_entity` 或 `overview` 类型的 `er-model.json`，再跑：
+
+```powershell
+python .\thesis-standardizer\scripts\layout_er_diagram.py .\paper-context\evidence\er-model.json --out .\paper-context\evidence\er-model.positioned.json
+powershell -ExecutionPolicy Bypass -File .\thesis-standardizer\scripts\generate_visio_er_diagram.ps1 -InputJson .\paper-context\evidence\er-model.positioned.json -OutputVsdx .\thesis-ai-standard\visio\er-diagram.vsdx -OutputPng .\thesis-ai-standard\exports\er-diagram.png
+```
+
+`overview` 总图默认会限量展示核心内容：最多 8 个实体、每个实体最多 4 个代表属性、最多 8 条关系；被省略的实体、属性和关系会写入 `layoutNotes`，方便再生成单实体 E-R 图或数据库表设计。
+临时预览更清爽版本时，可以给布局脚本追加 `--max-entities`、`--max-attributes-per-entity` 或 `--max-relationships`。
+
 这一步会重点检查：
 
 - `checked / inserted` 图表是否真的有可编辑源文件

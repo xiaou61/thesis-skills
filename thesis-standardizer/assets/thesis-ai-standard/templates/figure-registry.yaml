@@ -49,8 +49,8 @@ figures:
     chapter: "X"
     type: "architecture | flowchart | er_diagram | sequence | use_case | model | data_structure | ui_screenshot | experiment_screenshot | test_report | other"
     purpose: "说明该图解决什么表达问题"
-    source_kind: "drawio | mermaid | screenshot | chart_export | software_output | other"
-    source_file: "drawio/figure-X-1-name.drawio"
+    source_kind: "drawio | visio | mermaid | screenshot | chart_export | software_output | other"
+    source_file: "drawio/figure-X-1-name.drawio 或 visio/figure-X-1-name.vsdx"
     export_file: "exports/figure-X-1-name.png"
     evidence:
       - "填写对应代码、数据、实验、截图或设计材料路径"
@@ -100,6 +100,7 @@ diagram_style_defaults:
   font: "按学校模板；未知时使用宋体或微软雅黑"
   line_width: "1.5-2 px"
   connector: "正交连接线优先"
+  er_overview_limits: "总E-R图优先限量展示核心实体、代表属性和主关系；完整字段放到单实体E-R图或数据库表"
   fill_policy:
     primary_module: "浅蓝或蓝灰"
     data_layer: "浅绿"

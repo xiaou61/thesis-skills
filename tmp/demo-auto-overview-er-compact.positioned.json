@@ -1,0 +1,270 @@
+{
+  "diagramType": "overview",
+  "title": "安徽扶贫惠农公益网站总体E-R图 Demo",
+  "limits": {
+    "maxEntities": 6,
+    "maxAttributesPerEntity": 3,
+    "maxRelationships": 5
+  },
+  "entities": [
+    {
+      "id": "admin",
+      "name": "管理员",
+      "attributes": [
+        {
+          "name": "用户名",
+          "key": true,
+          "dx": 1.62,
+          "dy": 0.0
+        },
+        {
+          "name": "密码",
+          "dx": 1.612,
+          "dy": 1.612
+        },
+        {
+          "name": "姓名",
+          "dx": 1.612,
+          "dy": -1.612
+        }
+      ],
+      "x": 7.308,
+      "y": 3.292
+    },
+    {
+      "id": "donor",
+      "name": "爱心人士",
+      "attributes": [
+        {
+          "name": "图片",
+          "dx": 1.483,
+          "dy": 0.652
+        },
+        {
+          "name": "姓名",
+          "dx": 1.62,
+          "dy": 0.0
+        },
+        {
+          "name": "联系电话",
+          "dx": 1.453,
+          "dy": -0.717
+        }
+      ],
+      "x": 10.332,
+      "y": 4.937
+    },
+    {
+      "id": "product",
+      "name": "农产品助销",
+      "attributes": [
+        {
+          "name": "产品编号",
+          "key": true,
+          "dx": 1.508,
+          "dy": -0.592
+        },
+        {
+          "name": "产品名称",
+          "dx": 1.617,
+          "dy": 0.101
+        },
+        {
+          "name": "产品分类",
+          "dx": 0.421,
+          "dy": -1.251
+        }
+      ],
+      "x": 10.332,
+      "y": 1.583
+    },
+    {
+      "id": "user",
+      "name": "用户",
+      "attributes": [
+        {
+          "name": "用户账号",
+          "key": true,
+          "dx": -1.618,
+          "dy": 0.074
+        },
+        {
+          "name": "用户姓名",
+          "dx": -2.202,
+          "dy": -0.59
+        },
+        {
+          "name": "性别",
+          "dx": -1.435,
+          "dy": 0.751
+        }
+      ],
+      "x": 3.528,
+      "y": 3.292
+    },
+    {
+      "id": "application",
+      "name": "申请农户",
+      "attributes": [
+        {
+          "name": "申请编号",
+          "key": true,
+          "dx": -1.112,
+          "dy": 0.711
+        },
+        {
+          "name": "用户账号",
+          "dx": -2.56,
+          "dy": 0.686
+        },
+        {
+          "name": "用户姓名",
+          "dx": -1.62,
+          "dy": 0.0
+        }
+      ],
+      "x": 3.528,
+      "y": 4.937
+    },
+    {
+      "id": "achievement",
+      "name": "扶贫成果",
+      "attributes": [
+        {
+          "name": "成果编号",
+          "key": true,
+          "dx": -1.407,
+          "dy": -0.803
+        },
+        {
+          "name": "成果标题",
+          "dx": -1.615,
+          "dy": -0.133
+        },
+        {
+          "name": "成果照片",
+          "dx": 0.0,
+          "dy": -1.05
+        }
+      ],
+      "x": 3.528,
+      "y": 1.583
+    }
+  ],
+  "relationships": [
+    {
+      "name": "管理",
+      "from": "admin",
+      "to": "user",
+      "fromCardinality": "1",
+      "toCardinality": "m",
+      "x": 5.418,
+      "y": 3.292,
+      "fromLabelX": 6.396,
+      "fromLabelY": 3.092,
+      "toLabelX": 4.44,
+      "toLabelY": 3.092
+    },
+    {
+      "name": "管理",
+      "from": "admin",
+      "to": "donor",
+      "fromCardinality": "1",
+      "toCardinality": "m",
+      "x": 8.82,
+      "y": 4.115,
+      "fromLabelX": 7.956,
+      "fromLabelY": 3.872,
+      "toLabelX": 9.561,
+      "toLabelY": 4.518
+    },
+    {
+      "name": "管理",
+      "from": "admin",
+      "to": "product",
+      "fromCardinality": "1",
+      "toCardinality": "p",
+      "x": 8.82,
+      "y": 2.437,
+      "fromLabelX": 8.137,
+      "fromLabelY": 3.053,
+      "toLabelX": 9.669,
+      "toLabelY": 2.187
+    },
+    {
+      "name": "查看",
+      "from": "user",
+      "to": "application",
+      "fromCardinality": "1",
+      "toCardinality": "n",
+      "x": 3.528,
+      "y": 4.115,
+      "fromLabelX": 4.248,
+      "fromLabelY": 3.777,
+      "toLabelX": 2.808,
+      "toLabelY": 4.452
+    },
+    {
+      "name": "查看",
+      "from": "user",
+      "to": "achievement",
+      "fromCardinality": "m",
+      "toCardinality": "n",
+      "x": 3.528,
+      "y": 2.437,
+      "fromLabelX": 3.728,
+      "fromLabelY": 2.87,
+      "toLabelX": 3.728,
+      "toLabelY": 2.007
+    }
+  ],
+  "layout": {
+    "pageWidth": 12.6,
+    "pageHeight": 6.33
+  },
+  "layoutNotes": {
+    "limits": {
+      "maxEntities": 6,
+      "maxAttributesPerEntity": 3,
+      "maxRelationships": 5
+    },
+    "omittedEntities": [],
+    "omittedRelationships": [],
+    "omittedAttributes": {
+      "admin": [
+        "角色"
+      ],
+      "donor": [
+        "发布时间",
+        "评论数",
+        "收藏数"
+      ],
+      "product": [
+        "产地",
+        "规格",
+        "上市时间",
+        "单限",
+        "库存",
+        "价格",
+        "点击次数",
+        "评论数"
+      ],
+      "user": [
+        "用户电话",
+        "头像"
+      ],
+      "application": [
+        "申请标题",
+        "申请封面",
+        "审核回复",
+        "审核状态"
+      ],
+      "achievement": [
+        "发布时间",
+        "成果简介",
+        "评论数",
+        "收藏数"
+      ]
+    }
+  }
+}
