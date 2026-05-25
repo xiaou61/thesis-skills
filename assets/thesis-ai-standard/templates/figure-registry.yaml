@@ -102,6 +102,7 @@ diagram_style_defaults:
   line_width: "1.5-2 px"
   connector: "正交连接线优先"
   er_overview_limits: "总E-R图优先限量展示核心实体、代表属性和主关系；完整字段放到单实体E-R图或数据库表"
+  chapter4_database_defaults: "第四章数据库设计必须登记总E-R图、核心单实体E-R图和数据库三线表；没有数据库证据时登记证据缺口，不能用配置表替代数据库表"
   use_case_defaults: "用例图优先保留Visio可编辑源文件；单角色图左右分列，多角色通用功能图使用系统边界框"
   flowchart_defaults: "流程图优先保留Visio可编辑源文件；登录、添加、删除等流程用竖向紧凑布局，业务流程可用横向分支布局"
   function_architecture_defaults: "功能架构图优先保留Visio可编辑源文件；按系统根节点、前后台模块、角色或模块分组和竖向功能叶子组织，模块过多时拆分子图"

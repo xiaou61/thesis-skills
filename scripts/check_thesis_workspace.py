@@ -102,6 +102,169 @@ def detect_workspace_root(base: Path) -> Path:
     return base.parent if base.name == "thesis-ai-standard" else base
 
 
+def is_placeholder(value: object) -> bool:
+    text = str(value or "").strip().lower()
+    if not text:
+        return True
+    placeholder_values = {
+        "not_applicable",
+        "none",
+        "null",
+        "missing",
+        "字段名",
+        "字段类型",
+        "字段说明",
+        "实体名称",
+        "表名",
+        "schema/entity/migration 路径",
+        "schema/entity/migration/sql/table screenshot path",
+    }
+    return text in placeholder_values or "填写" in text
+
+
+def database_entities_with_fields(spec: object) -> list[dict]:
+    if not isinstance(spec, dict):
+        return []
+    design = spec.get("database_design")
+    if not isinstance(design, dict):
+        return []
+    entities = design.get("entities") or []
+    if not isinstance(entities, list):
+        return []
+    real_entities: list[dict] = []
+    for item in entities:
+        if not isinstance(item, dict) or not isinstance(item.get("fields"), list):
+            continue
+        if is_placeholder(item.get("name")) and is_placeholder(item.get("table")):
+            continue
+        real_fields = []
+        for field in item.get("fields") or []:
+            if isinstance(field, dict):
+                if not is_placeholder(field.get("name")):
+                    real_fields.append(field)
+            elif not is_placeholder(field):
+                real_fields.append(field)
+        if real_fields:
+            real_entities.append(item)
+    return real_entities
+
+
+def database_design_expected(spec: object) -> tuple[bool, str]:
+    if not isinstance(spec, dict):
+        return False, "spec unavailable"
+    design = spec.get("database_design")
+    if not isinstance(design, dict):
+        return False, "database_design missing"
+    status = str(design.get("evidence_status", "")).strip().lower()
+    entities = database_entities_with_fields(spec)
+    source_files = design.get("source_files") or []
+    if not isinstance(source_files, list):
+        source_files = [source_files]
+    concrete_sources = [item for item in source_files if not is_placeholder(item)]
+    if status in {"confirmed", "partial"}:
+        return True, f"evidence_status is {status}"
+    if entities:
+        return True, "database entities with fields are present"
+    if concrete_sources:
+        return True, "database source files are present"
+    return False, "database evidence is missing"
+
+
+def inspect_chapter4_database_assets(base: Path) -> list[CheckResult]:
+    checks: list[CheckResult] = []
+    spec_path = base / "templates" / "thesis-ai-spec.yaml"
+    workspace_root = detect_workspace_root(base)
+    out_dir = workspace_root / "paper-context" / "database-design"
+    figures_dir = workspace_root / "paper-context" / "figures"
+    registry_path = base / "templates" / "figure-registry.yaml"
+
+    try:
+        spec = load_yaml(spec_path)
+    except Exception as exc:
+        return [CheckResult("warn", spec_path.name, f"chapter-4 database inspection skipped: {exc}")]
+
+    expected, reason = database_design_expected(spec)
+    if not expected:
+        return checks
+
+    entity_count = len(database_entities_with_fields(spec))
+    if entity_count == 0:
+        checks.append(
+            CheckResult(
+                "error",
+                str(spec_path),
+                f"Chapter 4 database design is expected because {reason}, but database_design.entities[].fields is empty",
+            )
+        )
+        return checks
+
+    required_files = [
+        out_dir / "er" / "er-overview.json",
+        out_dir / "database-tables.md",
+        out_dir / "figure-registry-fragment.yaml",
+        out_dir / "chapter-4-database-section.md",
+    ]
+    for path in required_files:
+        if not path.exists():
+            checks.append(CheckResult("error", str(path), "Chapter 4 database asset is missing"))
+        elif path.stat().st_size == 0:
+            checks.append(CheckResult("error", str(path), "Chapter 4 database asset is empty"))
+        else:
+            checks.append(CheckResult("ok", str(path), "present"))
+
+    single_dir = out_dir / "er" / "single-entity"
+    single_files = list(single_dir.glob("*.json")) if single_dir.exists() else []
+    single_sources = [path for path in single_files if not path.name.endswith(".positioned.json")]
+    if len(single_sources) < entity_count:
+        checks.append(
+            CheckResult(
+                "error",
+                str(single_dir),
+                f"expected at least {entity_count} single-entity ER JSON files, found {len(single_sources)}",
+            )
+        )
+    else:
+        checks.append(CheckResult("ok", str(single_dir), f"{len(single_sources)} single-entity ER JSON file(s) present"))
+
+    table_dir = out_dir / "tables"
+    table_files = list(table_dir.glob("table-4-*.xml")) if table_dir.exists() else []
+    if len(table_files) < entity_count:
+        checks.append(
+            CheckResult(
+                "error",
+                str(table_dir),
+                f"expected at least {entity_count} database three-line table XML files, found {len(table_files)}",
+            )
+        )
+    else:
+        checks.append(CheckResult("ok", str(table_dir), f"{len(table_files)} database table XML file(s) present"))
+
+    png_files = list(figures_dir.glob("figure-4-*-*.png")) if figures_dir.exists() else []
+    vsdx_files = list(figures_dir.glob("figure-4-*-*.vsdx")) if figures_dir.exists() else []
+    if png_files or vsdx_files:
+        checks.append(CheckResult("ok", str(figures_dir), f"{len(vsdx_files)} Visio source file(s), {len(png_files)} PNG export(s) present"))
+    else:
+        checks.append(CheckResult("warn", str(figures_dir), "database ER JSON exists but Visio .vsdx/.png exports are not present yet"))
+
+    try:
+        registry_text = registry_path.read_text(encoding="utf-8") if registry_path.exists() else ""
+        fragment_path = out_dir / "figure-registry-fragment.yaml"
+        fragment_text = fragment_path.read_text(encoding="utf-8") if fragment_path.exists() else ""
+        combined = registry_text + "\n" + fragment_text
+        if "er_diagram" not in combined or "database_schema" not in combined:
+            checks.append(
+                CheckResult(
+                    "warn",
+                    str(registry_path),
+                    "figure/table registry does not mention both er_diagram and database_schema entries",
+                )
+            )
+    except Exception as exc:
+        checks.append(CheckResult("warn", str(registry_path), f"registry inspection skipped: {exc}"))
+
+    return checks
+
+
 def inspect_template_extract(base: Path) -> list[CheckResult]:
     checks: list[CheckResult] = []
     workspace_root = detect_workspace_root(base)
@@ -186,6 +349,7 @@ def main() -> int:
             if result.status == "ok" and rel_path.endswith((".json", ".yaml", ".yml")):
                 results.append(check_parse(base, rel_path))
         results.extend(inspect_core_fields(base))
+        results.extend(inspect_chapter4_database_assets(base))
         results.extend(inspect_template_extract(base))
 
     report = render(results)

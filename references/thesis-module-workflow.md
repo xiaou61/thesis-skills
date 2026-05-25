@@ -34,6 +34,7 @@ If an important material is missing, name it directly and continue with the part
 5. Figures and tables
    - Generate only the figures/tables needed by the current chapter.
    - Keep editable sources and exported images registered.
+   - For Chapter 4 database design, read `references/chapter-4-database-workflow.md` and generate the full database asset set before drafting.
 6. Delivery checks
    - Run `check_thesis_workspace.py`.
    - For final `.docx`, use the extracted template profile as the review baseline and list any remaining manual Word checks.
@@ -92,11 +93,13 @@ Write:
 Expected assets:
 
 - Visio function architecture diagram via `visio-function-architecture-workflow.md`
+- database asset set via `chapter-4-database-workflow.md`
 - Visio E-R overview via `visio-diagram-workflow.md`
-- single-entity E-R diagrams when the overview is crowded
-- database design three-line tables via `docx-production-rules.md` and `scripts/create_three_line_table.py`
+- single-entity E-R diagrams for core entities
+- database design three-line tables via `build_chapter4_database_assets.py` and `docx-production-rules.md`
 
 Keep E-R overview diagrams limited to core entities and relationships.
+Do not replace database table design with unrelated configuration tables. If database evidence is absent, record the missing schema/entity/migration/SQL evidence and stop that subsection.
 
 ### Chapter 5: Testing
 

@@ -28,6 +28,14 @@ python .\scripts\create_three_line_table.py --caption "表 4-1 用户表" --head
 
 If inserting into an unpacked `word/document.xml`, pass the unpacked directory and anchor arguments shown by `--help`.
 
+For Chapter 4 database tables, prefer the batch generator:
+
+```powershell
+python .\scripts\build_chapter4_database_assets.py .\paper-context\evidence\database-design-model.yaml --out .\paper-context\database-design
+```
+
+It creates one three-line OOXML snippet per entity under `paper-context/database-design/tables/`.
+
 ## Fallbacks
 
 Use only when the school template does not provide stronger rules:

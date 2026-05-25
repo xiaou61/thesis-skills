@@ -37,7 +37,7 @@ Optional attribute objects may include `dx` and `dy` to control their positions 
   "title": "系统总体E-R图",
   "limits": {
     "maxEntities": 8,
-    "maxAttributesPerEntity": 4,
+    "maxAttributesPerEntity": 3,
     "maxRelationships": 8
   },
   "layout": {
@@ -80,7 +80,7 @@ For overview diagrams, keep the picture intentionally sparse:
 - `maxRelationships`: keep the main relationship lines
 
 The layout script records omitted entities, relationships, and attributes in `layoutNotes`. Use single entity ER diagrams and database table design sections for the omitted detail.
-For crowded thesis overview ER diagrams, use `maxAttributesPerEntity: 3` and create separate single-entity ER diagrams for the full fields.
+For crowded thesis overview ER diagrams, reduce `maxAttributesPerEntity` to 2 and create separate single-entity ER diagrams for the full fields.
 The layout command also accepts `--max-entities`, `--max-attributes-per-entity`, and `--max-relationships` for temporary preview variants without editing the source JSON.
 
 ## Generate Editable Visio Output
@@ -90,8 +90,7 @@ Run from the repository root:
 ```powershell
 python .\scripts\layout_er_diagram.py `
   .\paper-context\evidence\er-model.json `
-  --out .\paper-context\evidence\er-model.positioned.json `
-  --max-attributes-per-entity 4
+  --out .\paper-context\evidence\er-model.positioned.json
 
 powershell -ExecutionPolicy Bypass -File .\scripts\generate_visio_er_diagram.ps1 `
   -InputJson .\paper-context\evidence\er-model.positioned.json `

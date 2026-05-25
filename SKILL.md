@@ -36,8 +36,10 @@ For a project/repo/system source, run this route:
    `thesis-ai-standard/templates/thesis-ai-spec.yaml`
    `thesis-ai-standard/templates/figure-registry.yaml`
 5. Draft by chapter using the chapter map below.
-6. Generate required Visio diagrams and three-line tables only when the chapter needs them.
-7. Run final checks:
+6. For Chapter 4, build the database-design asset set before drafting database sections:
+   `scripts/build_chapter4_database_assets.py <database-model.yaml> --out paper-context/database-design`
+7. Generate required Visio diagrams and three-line tables only when the chapter needs them.
+8. Run final checks:
    `scripts/check_thesis_workspace.py <workspace>`
 
 Read `references/thesis-module-workflow.md` when planning or executing the full route.
@@ -61,6 +63,8 @@ Chapters 1-3 are the main citation area. Do not force citations into implementat
   Run `layout_function_architecture_diagram.py`, `check_function_architecture_layout.py`, `generate_visio_function_architecture_diagram.ps1`.
 - E-R diagram: `references/visio-diagram-workflow.md`
   Run `layout_er_diagram.py`, `check_er_layout.py`, `generate_visio_er_diagram.ps1`.
+- Chapter 4 database assets: `references/chapter-4-database-workflow.md`
+  Run `build_chapter4_database_assets.py`, then render the overview and single-entity E-R JSON with the ER Visio route.
 - Flowchart: `references/visio-flowchart-workflow.md`
   Run `layout_flowchart_diagram.py`, `check_flowchart_layout.py`, `generate_visio_flowchart_diagram.ps1`.
 - Three-line tables: read `references/docx-production-rules.md`, then use `scripts/create_three_line_table.py`.
@@ -72,6 +76,7 @@ Keep editable sources: `.vsdx` for Visio figures and script/Word source for fina
 - School and advisor rules override defaults.
 - Never invent project functions, APIs, database fields, tests, screenshots, experiments, citations, DOI values, or school rules.
 - If evidence is missing, list missing materials instead of pretending.
+- Do not silently skip Chapter 4 database design. If schema/entity/migration/SQL evidence exists, generate overview E-R, single-entity E-R diagrams, and database three-line tables. If it does not exist, create a database evidence gap before drafting Chapter 4.
 - Every figure/table/equation/screenshot must have a source file, export file when applicable, first mention, and status in `figure-registry.yaml`.
 - Do not expose AI workflow language in thesis prose.
 - For stable `.docx` files, avoid whole-document markdown round trips unless the user accepts layout risk.
@@ -85,5 +90,6 @@ When `thesis-ai-standard/` exists, read these first and stop unless more detail 
 3. `thesis-ai-standard/templates/figure-registry.yaml`
 4. `paper-context/evidence/`, if present
 5. `paper-context/template-extract/template-rule-overrides.yaml`, if present
+6. `paper-context/database-design/`, if present
 
 Use deeper reference files only for the active task.

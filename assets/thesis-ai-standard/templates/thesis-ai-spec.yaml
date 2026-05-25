@@ -53,11 +53,28 @@ functional_modules:
       - "代码、截图、接口或测试材料路径"
 
 database_design:
+  evidence_status: "missing | partial | confirmed"
+  source_files:
+    - "schema/entity/migration/SQL/table screenshot path"
   entities:
     - name: "实体名称"
       table: "表名"
       purpose: "说明该实体/表的用途"
       evidence: "schema/entity/migration 路径"
+      fields:
+        - name: "字段名"
+          type: "字段类型"
+          key: false
+          nullable: "true | false | 未说明"
+          description: "字段说明"
+          evidence: "字段来源路径或说明"
+  relationships:
+    - name: "关系名称"
+      from: "源实体 id 或表名"
+      to: "目标实体 id 或表名"
+      fromCardinality: "1"
+      toCardinality: "m"
+      evidence: "关系来源路径或说明"
 
 chapters:
   - id: "chapter-1"
@@ -115,9 +132,9 @@ chapters:
       figures:
         - "Visio 功能架构图"
         - "Visio E-R 总图"
-        - "Visio 单实体 E-R 图"
+        - "Visio 单实体 E-R 图（核心实体逐个生成）"
       tables:
-        - "数据库三线表"
+        - "数据库三线表（每个论文范围内的数据表逐个生成）"
 
   - id: "chapter-5"
     title: "系统测试"
