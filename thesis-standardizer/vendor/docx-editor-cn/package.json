@@ -1,7 +1,0 @@
-{
-  "dependencies": {
-    "docx": "^9.6.1",
-    "fast-xml-parser": "^5.7.3",
-    "temml": "^0.13.2"
-  }
-}
