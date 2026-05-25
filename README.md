@@ -1,151 +1,314 @@
-# 论文标准化 Skill
+# 论文标准化使用手册
 
-这是一个面向本科系统设计类论文的 Codex skill。它的目标很简单：基于一个真实程序或项目，把代码、数据库、接口、截图、测试材料和学校模板整理成一篇证据链完整、格式可追溯的毕业论文。
+这个仓库是一个“本科系统类论文生成助手”。你不需要先研究里面的脚本怎么写，直接把项目、学校模板、任务书、数据库结构、截图等材料给 Codex，然后复制下面的提示词使用即可。
 
-当前主路径适合软件系统、网站、小程序、管理系统、物联网平台等“设计与实现”类题目。其它论文类型可以借用部分模板，但不是默认工作流。
+适合这些场景：
 
-## 核心原则
+- 基于一个真实程序生成本科毕业论文或毕业设计说明书。
+- 给已有论文补章节、补图、补表、补数据库设计。
+- 按学校 Word 模板统一字号、标题、题注、三线表等格式。
+- 自动生成 Visio 用例图、功能架构图、流程图、E-R 图。
+- 给第四章补总 E-R 图、单实体 E-R 图和数据库三线表。
 
-- 先证据，后正文：不要直接从空泛论文话术开始写。
-- 不编造系统功能、数据库字段、接口路径、测试结果、截图来源、参考文献和学校规则。
-- 学校 `.docx` 模板、导师要求和任务书优先于通用默认值。
-- 图、表、公式、截图都要有来源文件、导出文件、正文首次引用位置和状态记录。
-- 结构性图优先保留 Visio `.vsdx` 可编辑源文件。
+## 最快用法
 
-## 推荐流程
-
-1. 提取学校模板
-
-   ```powershell
-   python .\scripts\extract_docx_template_profile.py .\school-template.docx --out .\paper-context\template-extract
-   python .\scripts\generate_template_rule_overrides.py .\paper-context\template-extract\template-profile.json --out .\paper-context\template-extract\template-rule-overrides.yaml
-   ```
-
-2. 初始化或检查论文工作区
-
-   ```powershell
-   python .\scripts\init_thesis_workspace.py .\thesis-ai-standard
-   python .\scripts\check_thesis_workspace.py .\thesis-ai-standard
-   ```
-
-3. 扫描真实项目证据
-
-   ```powershell
-   python .\scripts\build_project_evidence.py <project-dir> --out .\paper-context\evidence
-   ```
-
-4. 填写三个核心文件
-
-   - `thesis-ai-standard/templates/standard-profile.yaml`
-   - `thesis-ai-standard/templates/thesis-ai-spec.yaml`
-   - `thesis-ai-standard/templates/figure-registry.yaml`
-
-5. 按章节生成正文、图表和检查报告。
-
-## 章节模块
-
-| 章节 | 重点 | 典型产物 |
-| --- | --- | --- |
-| 第1章 绪论 | 背景、意义、研究现状、研究内容、论文结构 | 引用密集段落、选题依据 |
-| 第2章 相关技术 | 技术介绍及其在本系统中的应用 | 技术栈说明、引用 |
-| 第3章 系统分析 | 可行性、角色、功能需求、非功能需求、用例分析 | Visio 用例图 |
-| 第4章 系统设计与实现 | 功能结构、数据库概念设计、数据库表设计、关键模块实现 | 功能架构图、ER 总图、单实体 ER 图、数据库三线表 |
-| 第5章 系统测试 | 测试环境、测试方法、测试用例、测试结果 | 测试用例表、截图或日志证据 |
-| 第6章 结论与展望 | 完成内容、不足、未来工作 | 总结段落 |
-
-第1章到第3章是主要引用聚集区。第4章优先写真实设计与实现，不把引用硬塞进代码或数据库说明里。
-
-## 第四章数据库资产
-
-第四章不能静默跳过数据库设计。如果存在实体类、SQL、迁移文件、数据库截图或用户提供的表结构，需要生成完整数据库资产：
-
-- 总体 E-R 图
-- 核心实体的单实体 E-R 图
-- 每个论文范围内数据表的三线表
-- 图表登记片段
-- 数据库设计正文草稿片段
-
-输入模型示例：
-
-```yaml
-entities:
-  - id: user
-    name: 用户
-    table: user
-    purpose: 存储系统用户账号、联系方式和状态
-    fields:
-      - {name: id, type: bigint, key: true, nullable: false, description: 用户编号}
-      - {name: username, type: varchar(50), nullable: false, description: 用户账号}
-relationships:
-  - {name: 下单, from: user, to: order, fromCardinality: "1", toCardinality: "m"}
-```
-
-生成命令：
-
-```powershell
-python .\scripts\build_chapter4_database_assets.py .\paper-context\evidence\database-design-model.yaml --out .\paper-context\database-design
-```
-
-生成后继续对 ER JSON 做布局、碰撞检查和 Visio 导出：
-
-```powershell
-python .\scripts\layout_er_diagram.py .\paper-context\database-design\er\er-overview.json --out .\paper-context\database-design\er\er-overview.positioned.json
-python .\scripts\check_er_layout.py .\paper-context\database-design\er\er-overview.positioned.json
-
-powershell -ExecutionPolicy Bypass -File .\scripts\generate_visio_er_diagram.ps1 `
-  -InputJson .\paper-context\database-design\er\er-overview.positioned.json `
-  -OutputVsdx .\paper-context\figures\figure-4-2-er-overview.vsdx `
-  -OutputPng .\paper-context\figures\figure-4-2-er-overview.png
-```
-
-总 E-R 图默认限制为 8 个实体、8 条关系、每个实体 3 个代表属性。完整字段放到单实体 E-R 图和数据库三线表中。
-
-## Visio 图能力
-
-本 skill 使用 Microsoft Visio COM 自动生成可编辑 `.vsdx`，并导出 `.png` 供 Word 插入。
-
-| 图类型 | 参考流程 | 主要脚本 |
-| --- | --- | --- |
-| 用例图 | `references/visio-use-case-workflow.md` | `layout_use_case_diagram.py`, `generate_visio_use_case_diagram.ps1` |
-| 功能架构图 | `references/visio-function-architecture-workflow.md` | `layout_function_architecture_diagram.py`, `generate_visio_function_architecture_diagram.ps1` |
-| E-R 图 | `references/visio-diagram-workflow.md` | `layout_er_diagram.py`, `generate_visio_er_diagram.ps1` |
-| 流程图 | `references/visio-flowchart-workflow.md` | `layout_flowchart_diagram.py`, `generate_visio_flowchart_diagram.ps1` |
-
-每类图都有对应的 `check_*_layout.py`，导出前应先检查布局。
-
-## 目录说明
+把这个仓库作为 skill 使用时，直接对 Codex 说：
 
 ```text
-.
-├── SKILL.md
-├── agents/
-│   └── openai.yaml
-├── assets/
-│   └── thesis-ai-standard/
-├── references/
-│   ├── thesis-module-workflow.md
-│   ├── chapter-4-database-workflow.md
-│   ├── docx-production-rules.md
-│   └── visio-*.md
-└── scripts/
-    ├── build_project_evidence.py
-    ├── build_chapter4_database_assets.py
-    ├── check_thesis_workspace.py
-    ├── layout_*_diagram.py
-    └── generate_visio_*_diagram.ps1
+使用 thesis-standardizer，根据我提供的程序生成一篇本科系统设计类论文。
+
+我的材料如下：
+1. 项目代码路径：填写代码目录
+2. 学校模板：填写 docx 模板路径，如果没有就写暂无
+3. 任务书/开题材料：填写路径，如果没有就写暂无
+4. 数据库结构：填写 SQL、实体类、迁移文件或数据库截图路径
+5. 系统截图：填写截图目录
+6. 测试材料：填写测试用例、日志或截图路径
+
+请先读取材料，提取模板规范和项目证据，然后按第1章到第6章生成论文草稿。
+要求：
+- 不要编造系统功能、数据库字段、接口、测试结果和参考文献。
+- 第3章需要生成 Visio 用例图。
+- 第4章需要生成功能架构图、总 E-R 图、单实体 E-R 图和数据库三线表。
+- 缺少材料的地方请列成“待补充证据”，不要硬写。
+- 最后告诉我生成了哪些文件、哪些地方还需要人工确认。
 ```
 
-`tmp/` 是本地 demo 和临时产物目录，不应提交。
+## 你需要准备什么
 
-## 验证
+材料越完整，生成效果越好。最低建议准备：
 
-提交前建议运行：
+| 材料 | 作用 | 没有怎么办 |
+| --- | --- | --- |
+| 项目代码 | 判断系统功能、技术栈、接口、模块 | 可以先用你口述的功能生成粗稿 |
+| 学校 Word 模板 | 提取字号、标题、页边距、题注、三线表格式 | 先按通用本科论文格式做 |
+| 数据库结构 | 生成 ER 图和数据库三线表 | 第四章数据库部分会标记为缺证据 |
+| 系统截图 | 支撑实现和测试章节 | 先写文字草稿，后续再补图 |
+| 测试材料 | 生成测试用例和结果分析 | 先生成测试计划，不能编造结果 |
+| 参考文献要求 | 第1章、第2章引用 | 没有就先标记待补充 |
 
-```powershell
-python C:\Users\Lenovo\.codex\skills\.system\skill-creator\scripts\quick_validate.py .
-python .\scripts\check_thesis_workspace.py .\assets\thesis-ai-standard
-git diff --check
+## 常用提示词
+
+### 1. 生成整篇论文
+
+```text
+使用 thesis-standardizer，基于这个项目生成完整本科论文。
+
+项目路径：填写路径
+学校模板：填写路径或暂无
+数据库材料：填写路径
+截图材料：填写路径
+测试材料：填写路径
+
+请按以下结构生成：
+第1章 绪论
+第2章 相关技术及其在本系统中的应用
+第3章 系统分析
+第4章 系统设计与实现
+第5章 系统测试
+第6章 结论与展望
+
+第1章和第2章可以集中放参考文献引用。
+第3章生成 Visio 用例图。
+第4章生成 Visio 功能架构图、总 E-R 图、单实体 E-R 图、数据库三线表。
+全文不要出现 AI 生成痕迹，不要编造证据。
 ```
 
-模板目录里的 `paper.title still looks unfilled` 属于占位模板的预期 warning，不代表 skill 失败。
+### 2. 只生成第三章
+
+```text
+使用 thesis-standardizer，只生成第3章“系统分析”。
+
+请根据项目代码和已有材料完成：
+1. 可行性分析
+2. 用户角色分析
+3. 功能需求分析
+4. 非功能需求分析
+5. 用例分析
+
+同时生成 Visio 用例图，保留 .vsdx 源文件和 png 图片。
+用例名称要和正文需求保持一致。
+```
+
+### 3. 只生成第四章
+
+```text
+使用 thesis-standardizer，只生成第4章“系统设计与实现”。
+
+请根据项目代码、数据库结构和截图完成：
+1. 系统功能结构设计
+2. 数据库概念结构设计
+3. 数据库表设计
+4. 关键模块实现
+
+必须生成：
+- Visio 功能架构图
+- Visio 总 E-R 图
+- 每个核心实体的单实体 E-R 图
+- 每个数据表的三线表
+
+总 E-R 图不要塞太多字段，完整字段放到单实体 E-R 图和数据库表里。
+如果数据库证据不够，请明确列出缺少哪些表或字段。
+```
+
+### 4. 补第四章数据库设计
+
+```text
+使用 thesis-standardizer，帮我补第四章数据库设计。
+
+数据库材料路径：填写 SQL、实体类、迁移文件或数据库截图路径
+论文主题：填写题目
+系统主要角色：填写角色
+系统主要功能：填写功能
+
+请输出：
+1. 数据库概念结构设计正文
+2. 总 E-R 图
+3. 单实体 E-R 图
+4. 数据库三线表
+5. 图表编号和正文引用位置建议
+
+要求所有字段必须来自数据库材料，不能自己编。
+```
+
+### 5. 生成用例图
+
+```text
+使用 thesis-standardizer，按 Visio 标准生成用例图。
+
+系统名称：填写系统名
+角色：
+- 角色1：填写说明
+- 角色2：填写说明
+
+用例：
+- 角色1：功能A、功能B、功能C
+- 角色2：功能D、功能E、功能F
+
+请生成可编辑 .vsdx 和 png，布局不要重叠，适合放在论文第3章。
+```
+
+### 6. 生成功能架构图
+
+```text
+使用 thesis-standardizer，生成第4章系统功能架构图。
+
+系统名称：填写系统名
+前台模块：
+- 模块1：功能1、功能2
+- 模块2：功能3、功能4
+后台模块：
+- 模块3：功能5、功能6
+- 模块4：功能7、功能8
+
+请生成 Visio 功能架构图，保留 .vsdx 和 png。
+如果模块太多，请拆分或压缩布局，不要让文字重叠。
+```
+
+### 7. 生成流程图
+
+```text
+使用 thesis-standardizer，生成论文中的 Visio 流程图。
+
+流程名称：填写流程名
+流程步骤：
+1. 填写步骤
+2. 填写步骤
+3. 填写判断条件
+4. 填写成功路径
+5. 填写失败路径
+
+请生成 .vsdx 和 png，适合插入论文正文。
+```
+
+### 8. 按学校模板改格式
+
+```text
+使用 thesis-standardizer，根据学校 Word 模板检查并调整论文格式。
+
+学校模板路径：填写 docx
+论文文件路径：填写 docx
+
+请检查：
+1. 页面设置
+2. 标题层级
+3. 正文字号和字体
+4. 图题和表题
+5. 三线表格式
+6. 目录、页码、参考文献格式风险
+
+不要大范围破坏原文内容，只做格式相关修改，并列出仍需人工确认的地方。
+```
+
+### 9. 检查论文有没有缺证据
+
+```text
+使用 thesis-standardizer，检查这篇论文的证据链。
+
+论文路径：填写路径
+项目代码路径：填写路径
+数据库材料路径：填写路径
+截图和测试材料路径：填写路径
+
+请检查：
+- 有没有编造或无法证明的功能
+- 数据库字段是否都有来源
+- 接口和模块描述是否能对应代码
+- 测试结果是否有截图、日志或表格支撑
+- 图表是否都有编号、题注、正文引用和源文件
+
+最后给我一个问题清单，按严重程度排序。
+```
+
+### 10. 降低 AIGC 痕迹
+
+```text
+使用 thesis-standardizer，帮我降低论文的 AI 味。
+
+论文路径：填写路径
+要求：
+1. 不改变事实和证据
+2. 不编造参考文献
+3. 不使用夸张空话
+4. 减少模板化句式
+5. 保持本科论文语气
+6. 输出修改说明
+
+如果某些段落缺少真实材料，请标记缺证据，不要靠改写硬撑。
+```
+
+## 快速实现方法
+
+如果你想最快跑出结果，可以按这个顺序让 Codex 做：
+
+```text
+第一步：读取我的项目代码和学校模板，建立论文工作区。
+第二步：扫描项目证据，整理技术栈、功能模块、接口、数据库、测试材料。
+第三步：先生成论文大纲和图表清单给我确认。
+第四步：确认后按章节生成正文。
+第五步：生成第3章用例图和第4章功能架构图、ER 图、数据库三线表。
+第六步：导出 Word 草稿，并检查格式、证据和图表编号。
+```
+
+如果时间很急，可以用这个：
+
+```text
+使用 thesis-standardizer，先给我生成一个可看的本科论文草稿。
+
+优先级：
+1. 章节结构完整
+2. 第3章有用例图
+3. 第4章有功能架构图、ER 图、数据库表
+4. 第5章有测试用例表
+5. 所有缺证据的地方标出来
+
+先不要追求终稿格式，先让我能看整体效果。
+```
+
+## 第四章特别提醒
+
+第四章最容易翻车的地方就是数据库设计太空。使用时请尽量提供以下任意一种材料：
+
+- `*.sql`
+- Java / Python / Node 的实体类或 ORM model
+- 数据库迁移文件
+- 数据库表截图
+- Navicat / DataGrip 导出的表结构
+- 你手写的表字段清单
+
+只要有字段材料，就可以生成：
+
+- 表4-1 用户表
+- 表4-2 订单表
+- 表4-3 商品表
+- 图4-2 系统总体 E-R 图
+- 图4-3 用户实体 E-R 图
+- 图4-4 订单实体 E-R 图
+
+总图负责表达关系，单实体图和三线表负责表达完整字段。不要把所有字段都挤进总图。
+
+## 生成结果一般在哪里
+
+常见输出会放在：
+
+```text
+paper-context/
+  evidence/          项目证据
+  database-design/   第四章数据库资产
+  figures/           Visio 图和 png
+  template-extract/  学校模板提取结果
+
+thesis-ai-standard/
+  templates/         论文规格、图表登记和审查规则
+```
+
+如果只是 demo 或临时测试，通常放在 `tmp/`，这个目录不需要提交。
+
+## 一句话版
+
+你可以直接这样说：
+
+```text
+使用 thesis-standardizer，基于这个真实项目帮我生成本科毕业论文。先读代码和模板，再按章节写，不要编造证据；第3章生成用例图，第4章生成功能架构图、总 ER 图、单实体 ER 图和数据库三线表，最后给我 Word 草稿和缺证据清单。
+```
 
