@@ -59,6 +59,28 @@ figures:
     status: "planned | drafted | checked | inserted | deprecated"
     risk_notes: "填写风险，例如术语未统一、数据待确认、截图需重截"
 
+figure_plan_defaults:
+  normal_system_thesis_target: "第3章2-3张图，第4章6-15张图，第5章3-8张真实截图或截图占位"
+  planning_script: "scripts/build_figure_plan.py"
+  chapter_3:
+    - "Visio 用例图"
+    - "Visio 核心业务流程图（有业务流程证据时）"
+    - "Visio 功能需求结构图（有模块证据时）"
+  chapter_4:
+    - "Visio 系统功能结构图"
+    - "Visio 总体架构图"
+    - "Visio 技术/部署结构图（有部署或技术栈证据时）"
+    - "Visio 总体 E-R 图"
+    - "Visio 单实体 E-R 图（核心实体或数据对象逐个生成）"
+    - "Visio 关键模块处理流程图（选取2-4个核心模块）"
+  chapter_5:
+    - "登录或入口页面测试截图"
+    - "系统首页或主界面截图"
+    - "核心功能测试截图"
+    - "测试结果、运行日志或报告截图"
+  under_planning_guard: "正常系统类论文少于8张图时，需要说明项目范围较小或证据不足"
+  over_planning_guard: "超过20张图时，将低价值截图移入附录候选"
+
 tables:
   - id: "表X-1"
     title: "填写表题"
@@ -90,6 +112,14 @@ equations:
     risk_notes: "填写风险，例如变量未解释、编号不一致"
 
 screenshot_checklist:
+  source_policy:
+    real_capture_required: true
+    placeholder_when_missing:
+      source_kind: "screenshot"
+      source_file: "pending_user_screenshot"
+      export_file: "paper-context/screenshots/figure-5-X-name.png"
+      status: "needs_user_screenshot"
+      risk_notes: "AI 不得伪造程序截图；等待用户补真实截图"
   required:
     - "分辨率足够，插入 Word 后仍清晰"
     - "裁剪掉无关边框、地址栏、桌面和通知"
@@ -103,6 +133,8 @@ diagram_style_defaults:
   connector: "正交连接线优先"
   er_overview_limits: "总E-R图优先限量展示核心实体、代表属性和主关系；完整字段放到单实体E-R图或数据库表"
   chapter4_database_defaults: "第四章数据库设计必须登记总E-R图、核心单实体E-R图和数据库三线表；没有数据库证据时登记证据缺口，不能用配置表替代数据库表"
+  figure_density_defaults: "正常系统类论文应先生成图表计划；第3章包含用例/流程/需求结构图，第4章包含架构/功能/ER/模块流程图，第5章包含真实截图或截图占位"
+  chapter5_screenshot_defaults: "第五章程序截图必须来自真实运行或用户材料；无法截图时保留needs_user_screenshot占位，不能生成假截图"
   use_case_defaults: "用例图优先保留Visio可编辑源文件；单角色图左右分列，多角色通用功能图使用系统边界框"
   flowchart_defaults: "流程图优先保留Visio可编辑源文件；登录、添加、删除等流程用竖向紧凑布局，业务流程可用横向分支布局"
   function_architecture_defaults: "功能架构图优先保留Visio可编辑源文件；按系统根节点、前后台模块、角色或模块分组和竖向功能叶子组织，模块过多时拆分子图"

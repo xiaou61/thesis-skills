@@ -33,6 +33,15 @@ implementation_sources:
   screenshots: "填写截图目录或 not_applicable"
   test_reports: "填写测试材料路径或 not_applicable"
 
+figure_plan:
+  status: "not_started | planned | partially_generated | complete"
+  source_file: "paper-context/figure-plan/figure-plan.yaml"
+  policy:
+    normal_system_thesis_min_figures: 8
+    structural_diagrams_need_editable_source: true
+    chapter5_screenshots_must_be_real: true
+    missing_screenshot_status: "needs_user_screenshot"
+
 roles:
   - name: "角色名称"
     description: "说明其在系统中的作用"
@@ -117,6 +126,8 @@ chapters:
     recommended_outputs:
       figures:
         - "Visio 用例图"
+        - "Visio 核心业务流程图（有业务流程证据时）"
+        - "Visio 功能需求结构图（有模块证据时）"
 
   - id: "chapter-4"
     title: "系统设计与实现"
@@ -131,8 +142,11 @@ chapters:
     recommended_outputs:
       figures:
         - "Visio 功能架构图"
+        - "Visio 总体架构图"
+        - "Visio 技术/部署结构图（有部署或技术栈证据时）"
         - "Visio E-R 总图"
         - "Visio 单实体 E-R 图（核心实体逐个生成）"
+        - "Visio 关键模块处理流程图（选取2-4个核心模块）"
       tables:
         - "数据库三线表（每个论文范围内的数据表逐个生成）"
 
@@ -146,6 +160,13 @@ chapters:
       - "测试结果分析"
     evidence_required:
       - "测试用例、日志、截图或报告"
+    recommended_outputs:
+      figures:
+        - "真实程序截图（登录、首页、核心功能、测试结果）"
+        - "截图缺失时登记 needs_user_screenshot 占位，不得伪造截图"
+      tables:
+        - "测试环境表"
+        - "测试用例三线表"
 
   - id: "chapter-6"
     title: "结论与展望"

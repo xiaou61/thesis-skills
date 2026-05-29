@@ -265,6 +265,65 @@ def inspect_chapter4_database_assets(base: Path) -> list[CheckResult]:
     return checks
 
 
+def inspect_figure_plan(base: Path) -> list[CheckResult]:
+    checks: list[CheckResult] = []
+    workspace_root = detect_workspace_root(base)
+    plan_dir = workspace_root / "paper-context" / "figure-plan"
+    if not plan_dir.exists():
+        return checks
+
+    required_files = [
+        plan_dir / "figure-plan.yaml",
+        plan_dir / "figure-registry-fragment.yaml",
+        plan_dir / "figure-plan.md",
+    ]
+    for path in required_files:
+        if not path.exists():
+            checks.append(CheckResult("error", str(path), "figure plan output is missing"))
+        elif path.stat().st_size == 0:
+            checks.append(CheckResult("error", str(path), "figure plan output is empty"))
+        else:
+            checks.append(CheckResult("ok", str(path), "present"))
+
+    plan_path = plan_dir / "figure-plan.yaml"
+    if not plan_path.exists():
+        return checks
+
+    try:
+        plan = load_yaml(plan_path)
+    except Exception as exc:
+        checks.append(CheckResult("error", str(plan_path), f"parse failed: {exc}"))
+        return checks
+
+    figures = plan.get("figures") if isinstance(plan, dict) else None
+    if not isinstance(figures, list):
+        checks.append(CheckResult("error", str(plan_path), "figures must be a list"))
+        return checks
+
+    if len(figures) < 8:
+        checks.append(CheckResult("warn", str(plan_path), f"only {len(figures)} figure(s) planned; normal system theses usually need more or a missing-evidence explanation"))
+    else:
+        checks.append(CheckResult("ok", str(plan_path), f"{len(figures)} figure(s) planned"))
+
+    for item in figures:
+        if not isinstance(item, dict):
+            checks.append(CheckResult("error", str(plan_path), "figure item must be an object"))
+            continue
+        figure_id = str(item.get("id", "unknown"))
+        source_kind = str(item.get("source_kind", "")).strip().lower()
+        source_file = str(item.get("source_file", "")).strip()
+        status = str(item.get("status", "")).strip().lower()
+        if source_kind == "visio" and not source_file.lower().endswith(".vsdx"):
+            checks.append(CheckResult("error", figure_id, "Visio figure source_file must be a .vsdx path"))
+        if source_kind == "screenshot":
+            if source_file == "pending_user_screenshot" and status != "needs_user_screenshot":
+                checks.append(CheckResult("error", figure_id, "pending screenshots must use status needs_user_screenshot"))
+            if source_file != "pending_user_screenshot" and status == "needs_user_screenshot":
+                checks.append(CheckResult("warn", figure_id, "screenshot has a source file but is still marked needs_user_screenshot"))
+
+    return checks
+
+
 def inspect_template_extract(base: Path) -> list[CheckResult]:
     checks: list[CheckResult] = []
     workspace_root = detect_workspace_root(base)
@@ -350,6 +409,7 @@ def main() -> int:
                 results.append(check_parse(base, rel_path))
         results.extend(inspect_core_fields(base))
         results.extend(inspect_chapter4_database_assets(base))
+        results.extend(inspect_figure_plan(base))
         results.extend(inspect_template_extract(base))
 
     report = render(results)
