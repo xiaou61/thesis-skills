@@ -4,14 +4,15 @@ Use this workflow before drafting Chapter 4 for system-design theses.
 
 ## Hard Rule
 
-Chapter 4 must not skip database design silently. Do one of these:
+Chapter 4 must not skip database/data-object design silently. Do one of these:
 
 1. If database evidence exists, generate:
    - one overview E-R diagram
    - one single-entity E-R diagram per core entity
    - one three-line database table per entity
    - a registry entry for every figure and table
-2. If database evidence is missing, stop Chapter 4 drafting and create an evidence gap asking for schema, entity classes, migrations, SQL, or screenshots. Do not replace database design with unrelated configuration tables.
+2. If business database evidence is missing but the project has real structured artifacts such as YAML configuration, JSON evidence, JSONL revision traces, Markdown registries, generated model files, or logs, create a clearly labeled data-object model from those artifacts and generate the same overview E-R, single-entity E-R, and three-line table assets. In the prose, state that this is a configuration/data-object model, not a physical business database.
+3. If neither business database evidence nor structured project data exists, stop Chapter 4 drafting and create an evidence gap asking for schema, entity classes, migrations, SQL, screenshots, or a confirmed data-object list.
 
 ## Input Model
 
@@ -32,7 +33,7 @@ relationships:
   - {name: 下单, from: user, to: order, fromCardinality: "1", toCardinality: "m"}
 ```
 
-Fields may come from entity classes, SQL, migrations, ORM models, table screenshots, or user-provided schema notes.
+Fields may come from entity classes, SQL, migrations, ORM models, table screenshots, user-provided schema notes, or clearly identified structured project artifacts. Do not import demo tables from `tmp/` unless the user explicitly says the demo is the target system.
 
 ## Generate Assets
 
@@ -76,10 +77,10 @@ After layout, run `scripts/check_er_layout.py` on every positioned JSON. Fix lay
 
 Chapter 4 should include:
 
-- a paragraph explaining the conceptual database design
+- a paragraph explaining whether the design is a business database model or a structured data-object model
 - the overview E-R figure
 - short paragraphs for each core entity
 - single-entity E-R figures for important entities
-- three-line tables for all database tables used in the thesis scope
+- three-line tables for all database/data-object tables used in the thesis scope
 
 Keep overview E-R sparse. The default overview limit is 8 entities, 8 relationships, and 3 representative attributes per entity. Put complete fields in single-entity E-R figures and database tables.

@@ -36,6 +36,22 @@ python .\scripts\build_chapter4_database_assets.py .\paper-context\evidence\data
 
 It creates one three-line OOXML snippet per entity under `paper-context/database-design/tables/`.
 
+### What Counts As A Three-Line Table
+
+A thesis three-line table has exactly these visible rules by default:
+
+- table top border: single line, normally `1.5pt`
+- header-bottom border: single line, normally `0.75pt`
+- table bottom border: single line, normally `1.5pt`
+
+It must not have visible vertical borders, inside horizontal grid lines, or Word `Table Grid` styling. A table created with `doc.add_table(...); table.style = "Table Grid"` is a grid table, not a three-line table.
+
+When generating `.docx` with `python-docx`, explicitly remove table-level borders and set cell-level OOXML borders for only the top, header-bottom, and bottom lines. After generation, run:
+
+```powershell
+python .\scripts\check_docx_three_line_tables.py .\paper.docx
+```
+
 ## Fallbacks
 
 Use only when the school template does not provide stronger rules:
@@ -54,4 +70,5 @@ Do not claim a `.docx` task is done when:
 
 - the input is not a readable OOXML `.docx`
 - template alignment was claimed but no template profile exists
+- tables were called three-line tables but still use `Table Grid`, vertical borders, or internal grid lines
 - remaining major findings were hidden

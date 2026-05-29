@@ -21,7 +21,8 @@ Use this before saying program-to-thesis work is complete.
 - `figure-registry.yaml` lists required figures/tables.
 - Chapter 3 use-case diagram has editable `.vsdx` source when generated.
 - Chapter 4 function architecture and E-R diagrams have editable `.vsdx` sources when generated.
-- database tables use a three-line table format or a school-provided table style.
+- database/data-object tables use a real three-line table format or a school-provided table style.
+- final `.docx` tables are not Word `Table Grid` tables unless the school template explicitly requires it.
 - every figure/table is mentioned in the text.
 
 ## Gate 4: Chapter Structure
@@ -46,6 +47,7 @@ Run applicable checks:
 ```powershell
 python .\scripts\check_thesis_workspace.py .\thesis-ai-standard
 python -m py_compile .\scripts\build_project_evidence.py
+python .\scripts\check_docx_three_line_tables.py .\path\to\final-paper.docx
 ```
 
 ## Completion Report

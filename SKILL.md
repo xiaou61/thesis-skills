@@ -36,8 +36,12 @@ For a project/repo/system source, run this route:
    `thesis-ai-standard/templates/thesis-ai-spec.yaml`
    `thesis-ai-standard/templates/figure-registry.yaml`
 5. Draft by chapter using the chapter map below.
-6. For Chapter 4, build the database-design asset set before drafting database sections:
+6. For Chapter 4, build the database-design asset set before drafting database/data-object sections:
    `scripts/build_chapter4_database_assets.py <database-model.yaml> --out paper-context/database-design`
+   If no business database exists but the project has real structured configuration/data artifacts
+   such as YAML, JSON, JSONL, Markdown registries, logs, or generated evidence files, create a
+   clearly labeled data-object model from those artifacts and generate the same overview E-R,
+   single-entity E-R, and three-line table assets. Do not call it a physical business database.
 7. Generate required Visio diagrams and three-line tables only when the chapter needs them.
 8. Run final checks:
    `scripts/check_thesis_workspace.py <workspace>`
@@ -68,6 +72,7 @@ Chapters 1-3 are the main citation area. Do not force citations into implementat
 - Flowchart: `references/visio-flowchart-workflow.md`
   Run `layout_flowchart_diagram.py`, `check_flowchart_layout.py`, `generate_visio_flowchart_diagram.ps1`.
 - Three-line tables: read `references/docx-production-rules.md`, then use `scripts/create_three_line_table.py`.
+  A Word `Table Grid` table is not a three-line table.
 
 Keep editable sources: `.vsdx` for Visio figures and script/Word source for final tables.
 
@@ -76,7 +81,8 @@ Keep editable sources: `.vsdx` for Visio figures and script/Word source for fina
 - School and advisor rules override defaults.
 - Never invent project functions, APIs, database fields, tests, screenshots, experiments, citations, DOI values, or school rules.
 - If evidence is missing, list missing materials instead of pretending.
-- Do not silently skip Chapter 4 database design. If schema/entity/migration/SQL evidence exists, generate overview E-R, single-entity E-R diagrams, and database three-line tables. If it does not exist, create a database evidence gap before drafting Chapter 4.
+- Do not silently skip Chapter 4 database/data-object design. If schema/entity/migration/SQL evidence exists, generate overview E-R, single-entity E-R diagrams, and database three-line tables. If no business database evidence exists but the project has real structured configuration or evidence artifacts, generate a clearly labeled data-object E-R model and three-line tables from those artifacts. If neither exists, create an evidence gap before drafting Chapter 4.
+- A three-line table means only top border, header-bottom border, and bottom border. No vertical borders, no internal grid lines, and no Word `Table Grid` styling. Verify final DOCX tables with `scripts/check_docx_three_line_tables.py` when a `.docx` is produced.
 - Every figure/table/equation/screenshot must have a source file, export file when applicable, first mention, and status in `figure-registry.yaml`.
 - Do not expose AI workflow language in thesis prose.
 - For stable `.docx` files, avoid whole-document markdown round trips unless the user accepts layout risk.

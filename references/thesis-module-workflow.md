@@ -34,7 +34,7 @@ If an important material is missing, name it directly and continue with the part
 5. Figures and tables
    - Generate only the figures/tables needed by the current chapter.
    - Keep editable sources and exported images registered.
-   - For Chapter 4 database design, read `references/chapter-4-database-workflow.md` and generate the full database asset set before drafting.
+   - For Chapter 4 database or structured data-object design, read `references/chapter-4-database-workflow.md` and generate the full E-R/table asset set before drafting.
 6. Delivery checks
    - Run `check_thesis_workspace.py`.
    - For final `.docx`, use the extracted template profile as the review baseline and list any remaining manual Word checks.
@@ -99,7 +99,7 @@ Expected assets:
 - database design three-line tables via `build_chapter4_database_assets.py` and `docx-production-rules.md`
 
 Keep E-R overview diagrams limited to core entities and relationships.
-Do not replace database table design with unrelated configuration tables. If database evidence is absent, record the missing schema/entity/migration/SQL evidence and stop that subsection.
+If business database evidence is absent but the project itself is a local tool, generator, CLI, skill, library, or documentation pipeline with real YAML/JSON/JSONL/Markdown data artifacts, model those artifacts as "data objects" and explicitly state that they are not physical business database tables. Then still generate the overview E-R diagram, single-entity E-R diagrams, and three-line tables for those data objects. If neither business schema nor structured project data exists, record the missing schema/entity/migration/SQL evidence and stop that subsection.
 
 ### Chapter 5: Testing
 
