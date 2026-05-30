@@ -38,10 +38,12 @@ figure_plan:
   source_file: "paper-context/figure-plan/figure-plan.yaml"
   policy:
     normal_system_thesis_min_figures: 8
+    default_chapter_count: 6
     structural_diagrams_need_editable_source: true
     chapter5_is_implementation: true
     chapter5_screenshots_must_be_real: true
     chapter6_is_testing: true
+    standalone_conclusion_chapter: "only_if_school_template_or_user_requires"
     missing_screenshot_status: "needs_user_screenshot"
 
 roles:
@@ -170,12 +172,13 @@ chapters:
 
   - id: "chapter-6"
     title: "系统测试"
-    purpose: "说明测试环境、测试用例和测试结果。"
+    purpose: "说明测试环境、测试用例和测试结果；若学校模板不要求单独结论章，则在本章末尾总结完成工作、不足与后续展望。"
     required_sections:
       - "测试环境"
       - "测试方法"
       - "测试用例"
       - "测试结果分析"
+      - "本章小结或总结与展望（无独立结论章时）"
     evidence_required:
       - "测试用例、日志、截图或报告"
     recommended_outputs:
@@ -185,8 +188,10 @@ chapters:
         - "测试环境表"
         - "测试用例三线表"
 
-  - id: "chapter-7"
+  - id: "optional-chapter-7"
     title: "结论与展望"
+    optional: true
+    include_when: "学校模板、导师或用户明确要求独立结论章时才生成"
     purpose: "总结实际完成内容、不足与后续工作。"
     required_sections:
       - "工作总结"

@@ -58,8 +58,8 @@ Generated: {today}
 | Chapter 3 System analysis | requirements, roles, use cases | no | not_started | Visio use-case diagram |
 | Chapter 4 System design | function structure, architecture, database/data objects | no | not_started | function diagram, E-R, three-line tables |
 | Chapter 5 System implementation | key modules, running functions, screenshots | no | not_started | real screenshots or needs_user_screenshot |
-| Chapter 6 System testing | environment, cases, results | no | not_started | write only from evidence |
-| Chapter 7 Conclusion | summary, limits, future work | no | not_started | write last |
+| Chapter 6 System testing | environment, cases, results, summary | no | not_started | write only from evidence; include summary/limits/future work unless a standalone conclusion chapter is required |
+| Optional Chapter 7 Conclusion | summary, limits, future work | no | not_started | create only when school template/user requires it |
 """,
     "revision-log.md": """# Revision Log
 

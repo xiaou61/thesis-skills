@@ -37,8 +37,8 @@ Use this before saying program-to-thesis work is complete.
 - Chapter 3 covers analysis and requirements.
 - Chapter 4 covers system design.
 - Chapter 5 covers system implementation and program screenshots.
-- Chapter 6 covers testing from real testing evidence.
-- Chapter 7 summarizes completed work and does not introduce new claims.
+- Chapter 6 covers testing from real testing evidence and, unless a standalone conclusion chapter is required, includes concise completed-work, limitation, and future-work summary sections.
+- Chapter 7 appears only when the school template or user explicitly requires a standalone conclusion chapter; if present, it does not introduce new claims.
 
 ## Gate 5: Integrity
 

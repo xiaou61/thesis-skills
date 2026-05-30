@@ -131,6 +131,7 @@ Write only from evidence:
 - test cases
 - screenshots, logs, or reports
 - test result tables
+- summary of completed work, limitations, and future work when the school template does not require a separate conclusion chapter
 
 Expected assets:
 
@@ -140,12 +141,6 @@ Expected assets:
 
 Never fabricate test results. Do not move normal function screenshots into this chapter.
 
-### Chapter 7: Conclusion
+### Optional Standalone Conclusion
 
-Write:
-
-- completed work
-- limitations
-- future work
-
-Do not introduce new features or evidence here.
+Create a separate conclusion chapter only when the school template, advisor, or user explicitly asks for it. If created, it should summarize completed work, limitations, and future work without introducing new features or new evidence.

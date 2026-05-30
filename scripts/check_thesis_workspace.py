@@ -103,6 +103,18 @@ def detect_workspace_root(base: Path) -> Path:
     return base.parent if base.name == "thesis-ai-standard" else base
 
 
+def first_existing_path(candidates: list[Path]) -> Path:
+    for path in candidates:
+        if path.exists():
+            return path
+    return candidates[0]
+
+
+def paper_context_dir(workspace_root: Path, name: str) -> Path:
+    """Support both repo-level paper-context outputs and self-contained thesis workspaces."""
+    return first_existing_path([workspace_root / name, workspace_root / "paper-context" / name])
+
+
 def is_placeholder(value: object) -> bool:
     text = str(value or "").strip().lower()
     if not text:
@@ -175,8 +187,8 @@ def inspect_chapter4_database_assets(base: Path) -> list[CheckResult]:
     checks: list[CheckResult] = []
     spec_path = base / "templates" / "thesis-ai-spec.yaml"
     workspace_root = detect_workspace_root(base)
-    out_dir = workspace_root / "paper-context" / "database-design"
-    figures_dir = workspace_root / "paper-context" / "figures"
+    out_dir = paper_context_dir(workspace_root, "database-design")
+    figures_dir = paper_context_dir(workspace_root, "figures")
     registry_path = base / "templates" / "figure-registry.yaml"
 
     try:
@@ -269,7 +281,7 @@ def inspect_chapter4_database_assets(base: Path) -> list[CheckResult]:
 def inspect_figure_plan(base: Path) -> list[CheckResult]:
     checks: list[CheckResult] = []
     workspace_root = detect_workspace_root(base)
-    plan_dir = workspace_root / "paper-context" / "figure-plan"
+    plan_dir = paper_context_dir(workspace_root, "figure-plan")
     if not plan_dir.exists():
         return checks
 
@@ -363,7 +375,7 @@ def inspect_figure_registry(base: Path) -> list[CheckResult]:
 def inspect_template_extract(base: Path) -> list[CheckResult]:
     checks: list[CheckResult] = []
     workspace_root = detect_workspace_root(base)
-    template_dir = workspace_root / "paper-context" / "template-extract"
+    template_dir = paper_context_dir(workspace_root, "template-extract")
     profile_path = base / "templates" / "standard-profile.yaml"
 
     template_expected = False
