@@ -24,6 +24,7 @@ Use this before saying program-to-thesis work is complete.
 - Chapter 3 business-flow / requirement-structure diagrams have editable `.vsdx` sources when generated.
 - Chapter 4 function architecture, overall architecture, technical/deployment architecture, and E-R diagrams have editable `.vsdx` sources when generated.
 - Chapter 5 implementation flowcharts have editable `.vsdx` sources when generated.
+- final `.docx` embeds generated structural `.vsdx` figures as Visio OLE objects when OfficeCLI or Word automation is available; verify with `scripts/check_docx_visio_ole.py`.
 - database/data-object tables use a real three-line table format or a school-provided table style.
 - final `.docx` tables are not Word `Table Grid` tables unless the school template explicitly requires it.
 - Chapter 5 program screenshots are real implementation screenshots, or are explicitly registered as `needs_user_screenshot`; synthetic screenshots are not allowed.
@@ -55,6 +56,7 @@ python .\scripts\check_thesis_workspace.py .\thesis-ai-standard
 python .\scripts\build_figure_plan.py .\thesis-ai-standard\templates\thesis-ai-spec.yaml --out .\paper-context\figure-plan
 python -m py_compile .\scripts\build_project_evidence.py
 python .\scripts\check_docx_three_line_tables.py .\path\to\final-paper.docx
+python .\scripts\check_docx_visio_ole.py .\path\to\final-paper.docx --min-visio-ole <expected-count>
 ```
 
 ## Completion Report

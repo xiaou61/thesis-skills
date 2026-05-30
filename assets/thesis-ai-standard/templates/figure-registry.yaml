@@ -41,6 +41,7 @@ rules:
     - "图表编号按章节连续"
     - "图表标题与正文术语一致"
     - "每个导出图片都应保留源文件或来源说明"
+    - "结构性 Visio 图进入最终 Word 时应优先嵌入 Visio OLE 对象，PNG 只作为预览缩略图"
     - "截图不得含有无关桌面、隐私信息或调试脏数据"
     - "表格列名、单位、数据来源必须明确"
 
@@ -53,6 +54,8 @@ figures:
     source_kind: "visio | mermaid | screenshot | chart_export | software_output | other"
     source_file: "visio/figure-X-1-name.vsdx 或其他可编辑源文件"
     export_file: "exports/figure-X-1-name.png"
+    docx_embedding: "visio_ole_preferred | image_only | not_applicable"
+    docx_embedding_status: "planned | pending_officecli_ole | embedded_ole_verified | image_only_reported | not_applicable"
     evidence:
       - "填写对应代码、数据、实验、截图或设计材料路径"
     first_mentioned_in: "第X章第X节，填写正文位置"
@@ -141,6 +144,7 @@ diagram_style_defaults:
   use_case_defaults: "用例图优先保留Visio可编辑源文件；单角色图左右分列，多角色通用功能图使用系统边界框"
   flowchart_defaults: "流程图优先保留Visio可编辑源文件；登录、添加、删除等流程用竖向紧凑布局，业务流程可用横向分支布局"
   function_architecture_defaults: "功能架构图优先保留Visio可编辑源文件；按系统根节点、前后台模块、角色或模块分组和竖向功能叶子组织，模块过多时拆分子图"
+  docx_embedding_defaults: "最终.docx中，结构性.vsdx图优先通过OfficeCLI或Word自动化嵌入为Visio OLE对象；若只能插入PNG，必须在交付报告中说明不可编辑风险并保留.vsdx源文件。"
   fill_policy:
     primary_module: "浅蓝或蓝灰"
     data_layer: "浅绿"

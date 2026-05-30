@@ -46,6 +46,7 @@ For a project/repo/system source, run this route:
    clearly labeled data-object model from those artifacts and generate the same overview E-R,
    single-entity E-R, and three-line table assets. Do not call it a physical business database.
 8. Generate required Visio diagrams, screenshot placeholders, and three-line tables only when the chapter needs them.
+   When producing the final `.docx`, embed structural `.vsdx` figures as Visio OLE objects when OfficeCLI or Word automation is available; the `.png` export is only the preview thumbnail.
 9. Run final checks:
    `scripts/check_thesis_workspace.py <workspace>`
 
@@ -66,6 +67,8 @@ Chapters 1-3 are the main citation area. Do not force citations into implementat
 
 - Figure/screenshot plan: `references/figure-and-screenshot-plan.md`
   Run `build_figure_plan.py` before drafting Chapter 3-6. A normal system thesis should plan many evidence-backed figures, not only one use-case diagram and one function diagram.
+- Word delivery with editable Visio: read `references/docx-production-rules.md`
+  For generated structural `.vsdx` figures, prefer `scripts/embed_visio_ole_with_officecli.py` and verify the final `.docx` with `scripts/check_docx_visio_ole.py`. A PNG preview in Word is not an editable Visio diagram.
 - Use-case diagram: `references/visio-use-case-workflow.md`
   Run `layout_use_case_diagram.py`, `check_use_case_layout.py`, `generate_visio_use_case_diagram.ps1`.
 - Function architecture diagram: `references/visio-function-architecture-workflow.md`
@@ -80,6 +83,7 @@ Chapters 1-3 are the main citation area. Do not force citations into implementat
   A Word `Table Grid` table is not a three-line table.
 
 Keep editable sources: `.vsdx` for Visio figures and script/Word source for final tables.
+For Word delivery, a PNG inserted into the body is only a preview image. A figure should not be called "Word-editable Visio" unless the `.docx` contains a Visio OLE object, verified with `scripts/check_docx_visio_ole.py`.
 
 ## Hard Rules
 
@@ -91,6 +95,7 @@ Keep editable sources: `.vsdx` for Visio figures and script/Word source for fina
 - Do not under-plan figures for a normal system thesis. If fewer than 8 figures are planned across Chapters 3-6, explain the small scope or missing evidence.
 - Never fabricate Chapter 5 program screenshots. Chapter 5 is the implementation chapter and should contain real running-program screenshots for implemented functions. If the app cannot be run or screenshots are not provided, create `needs_user_screenshot` entries in `figure-registry.yaml` and list them as evidence gaps.
 - A three-line table means only top border, header-bottom border, and bottom border. No vertical borders, no internal grid lines, and no Word `Table Grid` styling. Verify final DOCX tables with `scripts/check_docx_three_line_tables.py` when a `.docx` is produced.
+- For final `.docx` delivery, do not represent structural Visio diagrams only as static PNGs unless OLE embedding is impossible and explicitly reported. Prefer `scripts/embed_visio_ole_with_officecli.py`, then verify with `scripts/check_docx_visio_ole.py`.
 - Every figure/table/equation/screenshot must have a source file, export file when applicable, first mention, and status in `figure-registry.yaml`.
 - Do not expose AI workflow language in thesis prose.
 - For stable `.docx` files, avoid whole-document markdown round trips unless the user accepts layout risk.

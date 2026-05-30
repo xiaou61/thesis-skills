@@ -26,3 +26,14 @@ dist/
 external/
 tmp/
 vendor/
+.tools/
+
+# Local agent planning notes and generated workspace roots.
+/task_plan.md
+/findings.md
+/progress.md
+/thesis-ai-standard/
+
+# Local demo generators used for ad-hoc validation, not part of the installed skill.
+/scripts/generate_campus_affairs_demo.py
+/scripts/generate_demo_thesis.py

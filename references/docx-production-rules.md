@@ -52,6 +52,33 @@ When generating `.docx` with `python-docx`, explicitly remove table-level border
 python .\scripts\check_docx_three_line_tables.py .\paper.docx
 ```
 
+### Editable Visio Figures In Word
+
+For structural thesis figures generated as `.vsdx`, the final `.docx` should contain a Visio OLE object, not only a static PNG. The PNG export is a preview thumbnail for the OLE object and may also be used in PDF export, but it is not the editable source.
+
+Use OfficeCLI when available:
+
+```powershell
+python .\scripts\embed_visio_ole_with_officecli.py .\paper.docx --figure-map .\paper-context\visio-ole-figure-map.json
+python .\scripts\check_docx_visio_ole.py .\paper.docx --min-visio-ole 8
+```
+
+The figure map is a JSON list:
+
+```json
+[
+  {
+    "caption": "图4-1 系统功能结构图",
+    "vsdx": "F:/paper-context/figures/figure-4-1-function-architecture.vsdx",
+    "preview": "F:/paper-context/figures/figure-4-1-function-architecture.png",
+    "width": "14cm",
+    "height": "8cm"
+  }
+]
+```
+
+Default layout is: Visio OLE paragraph, then figure caption paragraph. Do not insert the OLE object into the caption paragraph unless the user explicitly accepts that rough layout.
+
 ## Fallbacks
 
 Use only when the school template does not provide stronger rules:
@@ -71,4 +98,5 @@ Do not claim a `.docx` task is done when:
 - the input is not a readable OOXML `.docx`
 - template alignment was claimed but no template profile exists
 - tables were called three-line tables but still use `Table Grid`, vertical borders, or internal grid lines
+- generated Visio figures are only static PNGs in the final `.docx` and the lack of OLE embedding was not explicitly reported
 - remaining major findings were hidden
