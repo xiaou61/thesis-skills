@@ -46,7 +46,7 @@ For a project/repo/system source, run this route:
    clearly labeled data-object model from those artifacts and generate the same overview E-R,
    single-entity E-R, and three-line table assets. Do not call it a physical business database.
 8. Generate required Visio diagrams, screenshot placeholders, and three-line tables only when the chapter needs them.
-   When producing the final `.docx`, embed structural `.vsdx` figures as Visio OLE objects when OfficeCLI or Word automation is available; the `.png` export is only the preview thumbnail.
+   When producing the final `.docx`, embed structural `.vsdx` figures as Visio OLE objects when OfficeCLI or Word automation is available; the `.png` export is only the preview thumbnail. Check exported preview aspect ratios before embedding, and use aspect-fit OLE sizing instead of a universal fixed rectangle.
 9. Run final checks:
    `scripts/check_thesis_workspace.py <workspace>`
 
@@ -68,7 +68,7 @@ Chapters 1-3 are the main citation area. Do not force citations into implementat
 - Figure/screenshot plan: `references/figure-and-screenshot-plan.md`
   Run `build_figure_plan.py` before drafting Chapter 3-6. A normal system thesis should plan many evidence-backed figures, not only one use-case diagram and one function diagram.
 - Word delivery with editable Visio: read `references/docx-production-rules.md`
-  For generated structural `.vsdx` figures, prefer `scripts/embed_visio_ole_with_officecli.py` and verify the final `.docx` with `scripts/check_docx_visio_ole.py`. A PNG preview in Word is not an editable Visio diagram.
+  For generated structural `.vsdx` figures, run `scripts/check_figure_preview_aspects.py`, then prefer `scripts/embed_visio_ole_with_officecli.py --fit-preview-aspect --max-width 14cm --max-height 18cm` and verify the final `.docx` with `scripts/check_docx_visio_ole.py`. A PNG preview in Word is not an editable Visio diagram.
 - Use-case diagram: `references/visio-use-case-workflow.md`
   Run `layout_use_case_diagram.py`, `check_use_case_layout.py`, `generate_visio_use_case_diagram.ps1`.
 - Function architecture diagram: `references/visio-function-architecture-workflow.md`
@@ -95,10 +95,11 @@ For Word delivery, a PNG inserted into the body is only a preview image. A figur
 - Do not under-plan figures for a normal system thesis. If fewer than 8 figures are planned across Chapters 3-6, explain the small scope or missing evidence.
 - Never fabricate Chapter 5 program screenshots. Chapter 5 is the implementation chapter and should contain real running-program screenshots for implemented functions. If the app cannot be run or screenshots are not provided, create `needs_user_screenshot` entries in `figure-registry.yaml` and list them as evidence gaps.
 - A three-line table means only top border, header-bottom border, and bottom border. No vertical borders, no internal grid lines, and no Word `Table Grid` styling. Verify final DOCX tables with `scripts/check_docx_three_line_tables.py` when a `.docx` is produced.
-- For final `.docx` delivery, do not represent structural Visio diagrams only as static PNGs unless OLE embedding is impossible and explicitly reported. Prefer `scripts/embed_visio_ole_with_officecli.py`, then verify with `scripts/check_docx_visio_ole.py`.
+- For final `.docx` delivery, do not represent structural Visio diagrams only as static PNGs unless OLE embedding is impossible and explicitly reported. Prefer `scripts/embed_visio_ole_with_officecli.py --fit-preview-aspect`, then verify with `scripts/check_docx_visio_ole.py`.
+- Do not force every Visio OLE object into one fixed display size such as `14cm x 8cm`. Preserve the preview aspect ratio. If `scripts/check_figure_preview_aspects.py` reports an extreme flat/tall figure, re-layout or split the source diagram before final delivery.
 - Every figure/table/equation/screenshot must have a source file, export file when applicable, first mention, and status in `figure-registry.yaml`.
 - Do not expose AI workflow language in thesis prose.
-- For stable `.docx` files, avoid whole-document markdown round trips unless the user accepts layout risk.
+- For stable final `.docx` files, avoid whole-document markdown round trips unless the user accepts layout risk. Markdown-to-Word/Pandoc output must still pass `check_docx_three_line_tables.py`, `check_docx_visio_ole.py`, Office/OpenXML validation, and figure aspect checks before it can be treated as deliverable.
 
 ## Minimal Reads
 

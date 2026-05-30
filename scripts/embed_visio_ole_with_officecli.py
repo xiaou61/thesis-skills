@@ -228,6 +228,7 @@ def main() -> int:
         raise ValueError("figure map must be a JSON list")
 
     embedded = 0
+    embedded_items: list[dict[str, str]] = []
     for item in mappings:
         if not isinstance(item, dict):
             raise ValueError("figure map items must be objects")
@@ -244,13 +245,14 @@ def main() -> int:
             width, height = fit_size_from_preview(preview, args.max_width, args.max_height)
         embed_one(officecli, docx, caption, vsdx, preview, width, height, args.prog_id, not args.keep_static_previews)
         embedded += 1
+        embedded_items.append({"caption": caption, "width": width, "height": height})
 
     # OfficeCLI may leave a resident document process alive for speed. Flush and
     # close it so independent ZIP/OpenXML validators read the updated DOCX from disk.
     subprocess.run([str(officecli), "save", str(docx)], check=False, capture_output=True, text=True, encoding="utf-8", errors="replace")
     subprocess.run([str(officecli), "close", str(docx)], check=False, capture_output=True, text=True, encoding="utf-8", errors="replace")
 
-    print(json.dumps({"docx": str(docx), "embedded_visio_ole": embedded}, ensure_ascii=False, indent=2))
+    print(json.dumps({"docx": str(docx), "embedded_visio_ole": embedded, "items": embedded_items}, ensure_ascii=False, indent=2))
     return 0
 
 

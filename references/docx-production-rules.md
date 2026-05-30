@@ -6,7 +6,7 @@ Use this reference for the slim skill's Word-sensitive operations.
 
 1. School template first.
 2. Extract OOXML facts before judging format.
-3. Avoid whole-document markdown round trips for stable `.docx` files.
+3. Avoid whole-document markdown round trips for stable final `.docx` files. Markdown can be a drafting format, but the final thesis Word file must still pass the DOCX, table, and OLE checks below.
 4. Use local scripts only for narrow, evidence-backed operations.
 
 ## Supported Operations
@@ -59,9 +59,12 @@ For structural thesis figures generated as `.vsdx`, the final `.docx` should con
 Use OfficeCLI when available:
 
 ```powershell
-python .\scripts\embed_visio_ole_with_officecli.py .\paper.docx --figure-map .\paper-context\visio-ole-figure-map.json
+python .\scripts\check_figure_preview_aspects.py .\paper-context\visio-ole-figure-map.json
+python .\scripts\embed_visio_ole_with_officecli.py .\paper.docx --figure-map .\paper-context\visio-ole-figure-map.json --fit-preview-aspect --max-width 14cm --max-height 18cm
 python .\scripts\check_docx_visio_ole.py .\paper.docx --min-visio-ole 8
 ```
+
+Do not embed every OLE object with the same universal `14cm x 8cm` display size. That distorts tall flowcharts and flat architecture diagrams. Fit the OLE display size from the PNG preview aspect ratio, then inspect warnings from `check_figure_preview_aspects.py`. Extreme warnings mean the source diagram layout should be split or redesigned instead of stretched inside Word.
 
 The figure map is a JSON list:
 
@@ -78,6 +81,18 @@ The figure map is a JSON list:
 ```
 
 Default layout is: Visio OLE paragraph, then figure caption paragraph. Do not insert the OLE object into the caption paragraph unless the user explicitly accepts that rough layout.
+
+### Markdown Drafts And Pandoc
+
+Pandoc can produce a quick `.docx` from Markdown, but that raw output is not a thesis-final Word pipeline by default. Before treating any Markdown-derived DOCX as deliverable, verify:
+
+```powershell
+python .\scripts\check_docx_three_line_tables.py .\paper.docx
+python .\scripts\check_docx_visio_ole.py .\paper.docx --min-visio-ole 8 --require-before-caption
+python .\scripts\check_figure_preview_aspects.py .\paper-context\visio-ole-figure-map.json
+```
+
+If the Markdown-derived DOCX only contains static images, re-embed Visio OLE objects with OfficeCLI and re-run the checks. If tables fail the three-line check or the document fails OpenXML validation, use the controlled Word-generation path instead of shipping the Markdown conversion.
 
 ## Fallbacks
 
@@ -99,4 +114,6 @@ Do not claim a `.docx` task is done when:
 - template alignment was claimed but no template profile exists
 - tables were called three-line tables but still use `Table Grid`, vertical borders, or internal grid lines
 - generated Visio figures are only static PNGs in the final `.docx` and the lack of OLE embedding was not explicitly reported
+- OLE figures were embedded with a fixed size that visibly stretches the preview instead of preserving the source aspect ratio
+- `check_figure_preview_aspects.py` reports extreme flat/tall figure warnings and no split/re-layout decision is documented
 - remaining major findings were hidden

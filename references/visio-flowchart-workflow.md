@@ -48,6 +48,21 @@ The layout script can infer a compact vertical flow from the node order. For mor
 
 Use `layout.direction: "TB"` for login/add/delete process diagrams and `layout.direction: "LR"` or explicit `rank/column` for broader business-flow diagrams.
 
+## Thesis Display Guardrails
+
+Flowcharts must be readable after they are embedded into Word, not only editable in Visio.
+
+- For long implementation flows, split the figure into main flow and exception/approval subflow instead of forcing every step into one vertical line.
+- Prefer `LR` or explicit `rank/column` when the flow is a business process across roles/modules.
+- Avoid previews that fit into Word below about `5cm` wide or below about `3cm` high. Such figures usually become narrow strips or flat bands.
+- After exporting PNG previews, run:
+
+```powershell
+python .\scripts\check_figure_preview_aspects.py .\paper-context\visio-ole-figure-map.json
+```
+
+If the report says a flowchart is too tall/narrow or too wide/flat, re-layout or split the source `.vsdx`; do not solve it by stretching the OLE object.
+
 ## Generate Editable Visio Output
 
 Run from the repository root:

@@ -90,6 +90,78 @@ def normalize_diagram(diagram: dict[str, Any]) -> None:
     diagram["edges"] = edges
 
 
+def truthy(value: Any, default: bool = True) -> bool:
+    if value is None:
+        return default
+    if isinstance(value, bool):
+        return value
+    text = str(value).strip().lower()
+    if text in {"0", "false", "no", "off"}:
+        return False
+    if text in {"1", "true", "yes", "on"}:
+        return True
+    return default
+
+
+def group_sizes(nodes: list[dict[str, Any]], axis: str, size_key: str) -> dict[int, float]:
+    result: dict[int, float] = {}
+    for idx, node in enumerate(nodes):
+        value = int(float(node.get(axis, idx if axis == "rank" else 0)))
+        result[value] = max(result.get(value, 0.0), float(node.get(size_key, 0.0)))
+    return result
+
+
+def horizontal_positions(sizes: dict[int, float], gap: float, margin: float = 0.65) -> tuple[dict[int, float], float]:
+    positions: dict[int, float] = {}
+    cursor = margin
+    for key in sorted(sizes):
+        size = sizes[key]
+        positions[key] = cursor + size / 2
+        cursor += size + gap
+    return positions, cursor + margin - gap if sizes else margin * 2
+
+
+def vertical_positions(sizes: dict[int, float], gap: float, page_height: float, margin: float = 0.65) -> tuple[dict[int, float], float]:
+    total = sum(sizes.values()) + max(0, len(sizes) - 1) * gap
+    page_height = max(page_height, total + margin * 2)
+    positions: dict[int, float] = {}
+    cursor = page_height - margin
+    for key in sorted(sizes):
+        size = sizes[key]
+        positions[key] = cursor - size / 2
+        cursor -= size + gap
+    return positions, page_height
+
+
+def shift_positions(positions: dict[int, float], offset: float) -> dict[int, float]:
+    if abs(offset) < 0.001:
+        return positions
+    return {key: value + offset for key, value in positions.items()}
+
+
+def maybe_wrap_flat_lr(nodes: list[dict[str, Any]], layout: dict[str, Any], direction: str) -> None:
+    if direction not in {"LR", "RL"}:
+        return
+    if any(node.get("x") is not None or node.get("y") is not None for node in nodes):
+        return
+    if any(node.get("column") is not None for node in nodes):
+        return
+    wrap_after_raw = layout.get("wrapAfter") or layout.get("maxPerRow")
+    wrap_after = int(float(wrap_after_raw)) if wrap_after_raw is not None else 0
+    if not wrap_after and truthy(layout.get("autoWrapFlat"), True) and len(nodes) >= 4:
+        wrap_after = 2 if len(nodes) == 4 else 3
+    if wrap_after <= 0 or wrap_after >= len(nodes):
+        return
+    for idx, node in enumerate(nodes):
+        row = idx // wrap_after
+        offset = idx % wrap_after
+        node["rank"] = offset if row % 2 == 0 else wrap_after - offset - 1
+        node["column"] = row
+    layout["wrapped"] = True
+    layout["wrapStyle"] = "serpentine"
+    layout["wrapAfter"] = wrap_after
+
+
 def layout_flowchart(diagram: dict[str, Any]) -> None:
     normalize_diagram(diagram)
     layout = diagram.setdefault("layout", {})
@@ -97,6 +169,8 @@ def layout_flowchart(diagram: dict[str, Any]) -> None:
     rank_gap = float(layout.get("rankGap") or 0.72)
     column_gap = float(layout.get("columnGap") or 1.95)
     nodes = diagram["nodes"]
+
+    maybe_wrap_flat_lr(nodes, layout, direction)
 
     for idx, node in enumerate(nodes):
         node.setdefault("rank", idx)
@@ -110,29 +184,37 @@ def layout_flowchart(diagram: dict[str, Any]) -> None:
     max_column = max(int(float(node.get("column", 0))) for node in nodes)
 
     if direction in {"LR", "RL"}:
-        page_w = float(layout.get("pageWidth") or max(5.8, 1.2 + (max_rank + 1) * rank_gap * 1.35))
-        page_h = float(layout.get("pageHeight") or max(3.4, 1.2 + (max_column - min_column + 1) * column_gap * 0.75))
-        center_y = page_h / 2
-        start_x = 0.65
+        rank_sizes = group_sizes(nodes, "rank", "width")
+        column_sizes = group_sizes(nodes, "column", "height")
+        x_positions, needed_w = horizontal_positions(rank_sizes, rank_gap)
+        page_w = max(float(layout.get("pageWidth") or 0.0), needed_w, 5.0)
+        x_positions = shift_positions(x_positions, (page_w - needed_w) / 2)
+        y_positions, page_h = vertical_positions(column_sizes, column_gap, max(float(layout.get("pageHeight") or 0.0), 3.4))
+        if direction == "RL":
+            x_positions = {key: round(page_w - value, 3) for key, value in x_positions.items()}
         for idx, node in enumerate(nodes):
             if node.get("x") is not None and node.get("y") is not None:
                 continue
             rank = int(float(node.get("rank", idx)))
             col = int(float(node.get("column", 0)))
-            node["x"] = round(start_x + rank * rank_gap * 1.35, 3)
-            node["y"] = round(center_y - col * column_gap * 0.75, 3)
+            node["x"] = round(x_positions[rank], 3)
+            node["y"] = round(y_positions[col], 3)
     else:
-        page_w = float(layout.get("pageWidth") or max(3.2, 2.0 + (max_column - min_column + 1) * column_gap))
-        page_h = float(layout.get("pageHeight") or max(3.4, 0.9 + (max_rank + 1) * rank_gap))
-        center_x = page_w / 2
-        top_y = page_h - 0.45
+        column_sizes = group_sizes(nodes, "column", "width")
+        rank_sizes = group_sizes(nodes, "rank", "height")
+        x_positions, needed_w = horizontal_positions(column_sizes, column_gap)
+        page_w = max(float(layout.get("pageWidth") or 0.0), needed_w, 3.2)
+        x_positions = shift_positions(x_positions, (page_w - needed_w) / 2)
+        y_positions, page_h = vertical_positions(rank_sizes, rank_gap, max(float(layout.get("pageHeight") or 0.0), 3.4))
+        if direction in {"BT"}:
+            y_positions = {key: round(page_h - value, 3) for key, value in y_positions.items()}
         for idx, node in enumerate(nodes):
             if node.get("x") is not None and node.get("y") is not None:
                 continue
             rank = int(float(node.get("rank", idx)))
             col = int(float(node.get("column", 0)))
-            node["x"] = round(center_x + col * column_gap, 3)
-            node["y"] = round(top_y - rank * rank_gap, 3)
+            node["x"] = round(x_positions[col], 3)
+            node["y"] = round(y_positions[rank], 3)
 
     layout["pageWidth"] = round(page_w, 3)
     layout["pageHeight"] = round(page_h, 3)

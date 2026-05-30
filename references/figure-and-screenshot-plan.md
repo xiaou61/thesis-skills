@@ -80,3 +80,10 @@ Do not put normal program-function screenshots in Chapter 6. Chapter 6 may inclu
 - Every structural figure must keep an editable `.vsdx` source.
 - Every screenshot must be a real capture or a clearly marked placeholder.
 - Every figure must have first mention, title, evidence, source path, export path, and status.
+- Structural figure previews must be checked for Word display aspect before final DOCX embedding:
+
+```powershell
+python .\scripts\check_figure_preview_aspects.py .\paper-context\visio-ole-figure-map.json
+```
+
+Flat/tall warnings are figure-layout defects. Split or re-layout those figures before final delivery instead of stretching them in Word.

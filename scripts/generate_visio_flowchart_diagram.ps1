@@ -435,7 +435,7 @@ function Render-FlowchartDiagram {
     }
   }
 
-  return [pscustomobject]@{ Nodes = $nodeShapes.Count; Edges = $edgeCount }
+  return [pscustomobject]@{ Nodes = $nodeShapes.Keys.Count; Edges = $edgeCount }
 }
 
 $inputFullPath = Get-FullPath $InputJson

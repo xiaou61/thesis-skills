@@ -58,6 +58,21 @@ The layout script is optimized for the common undergraduate thesis template styl
 
 Keep each leaf label short. If there are too many bottom functions, split the figure by role or module instead of forcing everything into one figure.
 
+## Thesis Display Guardrails
+
+Function architecture diagrams easily become flat when too many modules are placed in one row. Treat that as a source-layout problem, not a Word scaling problem.
+
+- If a role/module has many leaves, split it into a role/module subfigure.
+- If there are many peer modules, create one overview figure plus several module detail figures.
+- Do not rely on a universal `14cm x 8cm` OLE display size. Preserve preview aspect ratio when embedding and inspect the fitted dimensions.
+- After exporting PNG previews, run:
+
+```powershell
+python .\scripts\check_figure_preview_aspects.py .\paper-context\visio-ole-figure-map.json
+```
+
+Warnings for very wide/flat previews mean the figure should be split or arranged into more vertical layers before Word production.
+
 ## Generate Editable Visio Output
 
 Run from the repository root:
