@@ -39,7 +39,9 @@ figure_plan:
   policy:
     normal_system_thesis_min_figures: 8
     structural_diagrams_need_editable_source: true
+    chapter5_is_implementation: true
     chapter5_screenshots_must_be_real: true
+    chapter6_is_testing: true
     missing_screenshot_status: "needs_user_screenshot"
 
 roles:
@@ -130,15 +132,16 @@ chapters:
         - "Visio 功能需求结构图（有模块证据时）"
 
   - id: "chapter-4"
-    title: "系统设计与实现"
-    purpose: "说明系统功能结构、数据库设计和关键模块实现。"
+    title: "系统设计"
+    purpose: "说明系统总体设计、功能结构、数据库或数据对象设计、架构与模块设计。"
     required_sections:
+      - "系统总体设计"
       - "系统功能结构设计"
       - "数据库概念结构设计"
       - "数据库表设计"
-      - "关键模块实现"
+      - "关键模块设计"
     evidence_required:
-      - "源码、数据库结构、接口、截图或设计材料"
+      - "源码、数据库结构、接口或设计材料"
     recommended_outputs:
       figures:
         - "Visio 功能架构图"
@@ -146,11 +149,26 @@ chapters:
         - "Visio 技术/部署结构图（有部署或技术栈证据时）"
         - "Visio E-R 总图"
         - "Visio 单实体 E-R 图（核心实体逐个生成）"
-        - "Visio 关键模块处理流程图（选取2-4个核心模块）"
       tables:
         - "数据库三线表（每个论文范围内的数据表逐个生成）"
 
   - id: "chapter-5"
+    title: "系统实现"
+    purpose: "说明关键模块实现、核心业务处理流程和程序运行界面。"
+    required_sections:
+      - "实现环境"
+      - "关键模块实现"
+      - "核心功能运行效果"
+      - "实现结果说明"
+    evidence_required:
+      - "源码、接口、运行截图、命令日志或程序页面"
+    recommended_outputs:
+      figures:
+        - "Visio 关键模块处理流程图（选取2-4个核心模块）"
+        - "真实程序截图（登录/入口、首页、核心功能）"
+        - "截图缺失时登记 needs_user_screenshot 占位，不得伪造截图"
+
+  - id: "chapter-6"
     title: "系统测试"
     purpose: "说明测试环境、测试用例和测试结果。"
     required_sections:
@@ -162,13 +180,12 @@ chapters:
       - "测试用例、日志、截图或报告"
     recommended_outputs:
       figures:
-        - "真实程序截图（登录、首页、核心功能、测试结果）"
-        - "截图缺失时登记 needs_user_screenshot 占位，不得伪造截图"
+        - "真实测试结果截图、运行日志截图或报告截图（有证据时）"
       tables:
         - "测试环境表"
         - "测试用例三线表"
 
-  - id: "chapter-6"
+  - id: "chapter-7"
     title: "结论与展望"
     purpose: "总结实际完成内容、不足与后续工作。"
     required_sections:

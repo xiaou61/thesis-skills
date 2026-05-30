@@ -22,10 +22,12 @@ Use this before saying program-to-thesis work is complete.
 - `paper-context/figure-plan/figure-plan.yaml` exists for full program-to-thesis work or the report explains why figure planning was skipped.
 - Chapter 3 use-case diagram has editable `.vsdx` source when generated.
 - Chapter 3 business-flow / requirement-structure diagrams have editable `.vsdx` sources when generated.
-- Chapter 4 function architecture, overall architecture, technical/deployment architecture, flowchart, and E-R diagrams have editable `.vsdx` sources when generated.
+- Chapter 4 function architecture, overall architecture, technical/deployment architecture, and E-R diagrams have editable `.vsdx` sources when generated.
+- Chapter 5 implementation flowcharts have editable `.vsdx` sources when generated.
 - database/data-object tables use a real three-line table format or a school-provided table style.
 - final `.docx` tables are not Word `Table Grid` tables unless the school template explicitly requires it.
-- Chapter 5 program screenshots are real screenshots/logs/reports, or are explicitly registered as `needs_user_screenshot`; synthetic screenshots are not allowed.
+- Chapter 5 program screenshots are real implementation screenshots, or are explicitly registered as `needs_user_screenshot`; synthetic screenshots are not allowed.
+- Chapter 6 test screenshots/logs/reports are used only when real test evidence exists.
 - every figure/table is mentioned in the text.
 
 ## Gate 4: Chapter Structure
@@ -33,9 +35,10 @@ Use this before saying program-to-thesis work is complete.
 - Chapter 1 introduces background, significance, research status, content, and structure.
 - Chapter 2 explains only technologies actually used by the system.
 - Chapter 3 covers analysis and requirements.
-- Chapter 4 covers design and implementation.
-- Chapter 5 uses real testing evidence.
-- Chapter 6 summarizes completed work and does not introduce new claims.
+- Chapter 4 covers system design.
+- Chapter 5 covers system implementation and program screenshots.
+- Chapter 6 covers testing from real testing evidence.
+- Chapter 7 summarizes completed work and does not introduce new claims.
 
 ## Gate 5: Integrity
 

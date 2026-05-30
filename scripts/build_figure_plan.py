@@ -6,7 +6,8 @@ system-design thesis should satisfy before chapter drafting and figure export:
 
 - structural Visio figures to generate
 - ER overview and single-entity figures to generate
-- Chapter 5 screenshot placeholders that must be filled by real screenshots
+- Chapter 5 implementation screenshots that must be filled by real screenshots
+- Chapter 6 test evidence screenshots only when real logs/reports exist
 """
 
 from __future__ import annotations
@@ -274,43 +275,60 @@ def build_plan(spec: dict[str, Any], max_module_flows: int, max_screenshots: int
         )
         next_ch4 += 1
 
+    next_ch5 = 1
     for index, name in enumerate(modules[:max_module_flows], start=1):
         stem = slug(name, f"module-{index}")
         figures.append(
             figure(
-                f"图4-{next_ch4}",
+                f"图5-{next_ch5}",
                 f"{name}模块处理流程图",
-                4,
+                5,
                 "flowchart",
                 "visio",
-                f"paper-context/figures/figure-4-{next_ch4}-{stem}-flow.vsdx",
-                f"paper-context/figures/figure-4-{next_ch4}-{stem}-flow.png",
+                f"paper-context/figures/figure-5-{next_ch5}-{stem}-flow.vsdx",
+                f"paper-context/figures/figure-5-{next_ch5}-{stem}-flow.png",
                 "planned",
                 [f"functional_modules[{index - 1}]"],
                 "说明关键模块的处理步骤、判断分支和异常路径",
             )
         )
-        next_ch4 += 1
+        next_ch5 += 1
 
-    screenshot_titles = ["登录界面测试截图", "系统首页测试截图"]
-    screenshot_titles.extend(f"{name}功能测试截图" for name in modules[:max_screenshots])
-    screenshot_titles.append("测试结果或运行日志截图")
+    screenshot_titles = ["登录或入口界面实现截图", "系统首页实现截图"]
+    screenshot_titles.extend(f"{name}功能实现截图" for name in modules[:max_screenshots])
 
-    for index, title in enumerate(screenshot_titles, start=1):
+    for index, title in enumerate(screenshot_titles, start=next_ch5):
         stem = slug(title, f"screenshot-{index}")
         figures.append(
             figure(
                 f"图5-{index}",
                 title,
                 5,
-                "ui_screenshot" if index <= len(screenshot_titles) - 1 else "test_report",
+                "ui_screenshot",
                 "screenshot",
                 screenshot_evidence[0],
                 f"paper-context/screenshots/figure-5-{index}-{stem}.png",
                 screenshot_status,
                 screenshot_evidence,
-                "支撑第五章测试步骤或测试结果描述",
+                "支撑第五章系统实现和功能运行效果描述",
                 "AI 不得伪造程序截图；无真实截图时保留占位并列入证据缺口" if screenshot_status == "needs_user_screenshot" else "",
+            )
+        )
+
+    test_report_source = text(impl.get("test_reports"))
+    if test_report_source and not is_placeholder(test_report_source):
+        figures.append(
+            figure(
+                "图6-1",
+                "测试结果或运行日志截图",
+                6,
+                "test_report",
+                "screenshot",
+                test_report_source,
+                "paper-context/screenshots/figure-6-1-test-result-or-log.png",
+                "planned",
+                [test_report_source],
+                "支撑第六章测试结果描述",
             )
         )
 
@@ -338,7 +356,7 @@ def build_markdown(plan: dict[str, Any]) -> str:
             "",
             "## Screenshot Rule",
             "",
-            "Chapter 5 screenshots must come from a real running program, user-provided images, browser automation, logs, or reports. If no such evidence exists, keep the item as `needs_user_screenshot` and do not generate a synthetic UI screenshot.",
+            "Chapter 5 screenshots must come from a real running program, user-provided images, or browser automation. Chapter 6 may include real test logs/reports/screenshots only when such evidence exists. If no real evidence exists, keep screenshot items as `needs_user_screenshot` and do not generate synthetic UI screenshots.",
             "",
         ]
     )

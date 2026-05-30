@@ -35,7 +35,7 @@ For a project/repo/system source, run this route:
    `thesis-ai-standard/templates/standard-profile.yaml`
    `thesis-ai-standard/templates/thesis-ai-spec.yaml`
    `thesis-ai-standard/templates/figure-registry.yaml`
-5. Build the figure/screenshot plan before drafting Chapter 3-5:
+5. Build the figure/screenshot plan before drafting Chapter 3-6:
    `scripts/build_figure_plan.py thesis-ai-standard/templates/thesis-ai-spec.yaml --out paper-context/figure-plan`
    Merge planned figures into `figure-registry.yaml` or keep the fragment as the drafting checklist.
 6. Draft by chapter using the chapter map below.
@@ -56,16 +56,17 @@ Read `references/thesis-module-workflow.md` when planning or executing the full 
 - Chapter 1, introduction: background, significance, research status, research content, thesis structure. This is citation-heavy.
 - Chapter 2, related technologies: explain each technology and how this system uses it. This is citation-heavy.
 - Chapter 3, system analysis: feasibility, roles, requirements, non-functional requirements, use-case diagram, core business flowchart, requirement/function decomposition figure when evidence supports them.
-- Chapter 4, design and implementation: function architecture diagram, overall architecture diagram, technical/deployment architecture diagram when supported, E-R overview, single-entity E-R diagrams, database/data-object three-line tables, key module flowcharts, key module implementation.
-- Chapter 5, testing: test environment, cases, real screenshots/logs/reports, screenshot placeholders when the user has not provided real screenshots, result tables.
-- Chapter 6, conclusion: completed work, limitations, future work. No special diagram by default.
+- Chapter 4, system design: function architecture diagram, overall architecture diagram, technical/deployment architecture diagram when supported, E-R overview, single-entity E-R diagrams, database/data-object three-line tables, and design rationale.
+- Chapter 5, system implementation: key module implementation, implementation flowcharts, real program screenshots for login/entry, homepage, and core functions; use `needs_user_screenshot` placeholders when real screenshots are missing. This chapter is not the testing chapter.
+- Chapter 6, system testing: test environment, test methods, test cases, logs/reports, test result screenshots if real evidence exists, and result tables. Do not put normal program-function screenshots here.
+- Chapter 7, conclusion: completed work, limitations, future work. No special diagram by default.
 
 Chapters 1-3 are the main citation area. Do not force citations into implementation or test claims unless the claim genuinely needs literature support.
 
 ## Diagram And Table Routing
 
 - Figure/screenshot plan: `references/figure-and-screenshot-plan.md`
-  Run `build_figure_plan.py` before drafting Chapter 3-5. A normal system thesis should plan many evidence-backed figures, not only one use-case diagram and one function diagram.
+  Run `build_figure_plan.py` before drafting Chapter 3-6. A normal system thesis should plan many evidence-backed figures, not only one use-case diagram and one function diagram.
 - Use-case diagram: `references/visio-use-case-workflow.md`
   Run `layout_use_case_diagram.py`, `check_use_case_layout.py`, `generate_visio_use_case_diagram.ps1`.
 - Function architecture diagram: `references/visio-function-architecture-workflow.md`
@@ -87,8 +88,9 @@ Keep editable sources: `.vsdx` for Visio figures and script/Word source for fina
 - Never invent project functions, APIs, database fields, tests, screenshots, experiments, citations, DOI values, or school rules.
 - If evidence is missing, list missing materials instead of pretending.
 - Do not silently skip Chapter 4 database/data-object design. If schema/entity/migration/SQL evidence exists, generate overview E-R, single-entity E-R diagrams, and database three-line tables. If no business database evidence exists but the project has real structured configuration or evidence artifacts, generate a clearly labeled data-object E-R model and three-line tables from those artifacts. If neither exists, create an evidence gap before drafting Chapter 4.
-- Do not under-plan figures for a normal system thesis. If fewer than 8 figures are planned across Chapters 3-5, explain the small scope or missing evidence.
-- Never fabricate Chapter 5 program screenshots. If the app cannot be run or screenshots are not provided, create `needs_user_screenshot` entries in `figure-registry.yaml` and list them as evidence gaps.
+- Do not merge implementation into Chapter 4 by default. For a normal system thesis, Chapter 4 is design, Chapter 5 is implementation, Chapter 6 is testing, and Chapter 7 is conclusion unless the school template explicitly requires a different structure.
+- Do not under-plan figures for a normal system thesis. If fewer than 8 figures are planned across Chapters 3-6, explain the small scope or missing evidence.
+- Never fabricate Chapter 5 program screenshots. Chapter 5 is the implementation chapter and should contain real running-program screenshots for implemented functions. If the app cannot be run or screenshots are not provided, create `needs_user_screenshot` entries in `figure-registry.yaml` and list them as evidence gaps.
 - A three-line table means only top border, header-bottom border, and bottom border. No vertical borders, no internal grid lines, and no Word `Table Grid` styling. Verify final DOCX tables with `scripts/check_docx_three_line_tables.py` when a `.docx` is produced.
 - Every figure/table/equation/screenshot must have a source file, export file when applicable, first mention, and status in `figure-registry.yaml`.
 - Do not expose AI workflow language in thesis prose.

@@ -40,7 +40,7 @@ Generated: {today}
 | Database schema |  | missing | required if the system uses a database |
 | API docs or route files |  | missing | required if the system has APIs |
 | Screenshots |  | missing | needed for UI/implementation evidence |
-| Test reports or logs |  | missing | needed for Chapter 5 |
+| Test reports or logs |  | missing | needed for Chapter 6 |
 | Reference list |  | missing | needed mainly for Chapters 1-3 |
 """,
     "evidence-gaps.md": """# Evidence Gaps
@@ -56,9 +56,10 @@ Generated: {today}
 | Chapter 1 Introduction | background, significance, research status | no | not_started | citation-heavy |
 | Chapter 2 Related technologies | technologies used by the system | no | not_started | citation-heavy |
 | Chapter 3 System analysis | requirements, roles, use cases | no | not_started | Visio use-case diagram |
-| Chapter 4 Design and implementation | function structure, database, modules | no | not_started | function diagram, E-R, three-line tables |
-| Chapter 5 Testing | environment, cases, results | no | not_started | write only from evidence |
-| Chapter 6 Conclusion | summary, limits, future work | no | not_started | write last |
+| Chapter 4 System design | function structure, architecture, database/data objects | no | not_started | function diagram, E-R, three-line tables |
+| Chapter 5 System implementation | key modules, running functions, screenshots | no | not_started | real screenshots or needs_user_screenshot |
+| Chapter 6 System testing | environment, cases, results | no | not_started | write only from evidence |
+| Chapter 7 Conclusion | summary, limits, future work | no | not_started | write last |
 """,
     "revision-log.md": """# Revision Log
 

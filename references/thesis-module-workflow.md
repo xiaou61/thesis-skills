@@ -33,7 +33,7 @@ If an important material is missing, name it directly and continue with the part
    - Mark unsupported claims as missing evidence.
 5. Figures and tables
    - Read `references/figure-and-screenshot-plan.md`.
-   - Run `build_figure_plan.py` before drafting Chapter 3-5.
+   - Run `build_figure_plan.py` before drafting Chapter 3-6.
    - Generate only evidence-backed figures/tables needed by the current chapter, but do not under-plan a normal system thesis.
    - Keep editable sources and exported images registered.
    - For Chapter 4 database or structured data-object design, read `references/chapter-4-database-workflow.md` and generate the full E-R/table asset set before drafting.
@@ -84,15 +84,14 @@ Expected figure:
 
 Use-case names must match the requirement text.
 
-### Chapter 4: Design And Implementation
+### Chapter 4: System Design
 
 Write:
 
 - system function structure
 - database conceptual design
 - database table design
-- key module design and implementation
-- selected process or screenshot evidence if needed
+- key module design
 
 Expected assets:
 
@@ -102,13 +101,29 @@ Expected assets:
 - database asset set via `chapter-4-database-workflow.md`
 - Visio E-R overview via `visio-diagram-workflow.md`
 - single-entity E-R diagrams for core entities
-- key module flowcharts for 2-4 important modules when code or workflow evidence exists
 - database design three-line tables via `build_chapter4_database_assets.py` and `docx-production-rules.md`
 
 Keep E-R overview diagrams limited to core entities and relationships.
 If business database evidence is absent but the project itself is a local tool, generator, CLI, skill, library, or documentation pipeline with real YAML/JSON/JSONL/Markdown data artifacts, model those artifacts as "data objects" and explicitly state that they are not physical business database tables. Then still generate the overview E-R diagram, single-entity E-R diagrams, and three-line tables for those data objects. If neither business schema nor structured project data exists, record the missing schema/entity/migration/SQL evidence and stop that subsection.
 
-### Chapter 5: Testing
+### Chapter 5: System Implementation
+
+Write:
+
+- implementation environment or runtime context
+- key module implementation
+- core function running effect
+- implementation result boundaries
+
+Expected assets:
+
+- key module flowcharts for 2-4 important modules when code or workflow evidence exists
+- real program screenshots for login/entry, homepage, and core functions
+- screenshot placeholders with `status: needs_user_screenshot` when the user has not provided real screenshots
+
+Never fabricate program screenshots. If the app cannot be run locally or the user has not provided screenshots, keep figure entries with `source_file: pending_user_screenshot`, leave visible placeholders in the draft, and list them in evidence gaps.
+
+### Chapter 6: Testing
 
 Write only from evidence:
 
@@ -121,12 +136,11 @@ Expected assets:
 
 - test environment table
 - test case three-line table
-- real program screenshots, run logs, or report screenshots
-- screenshot placeholders with `status: needs_user_screenshot` when the user has not provided real screenshots
+- real test run logs, reports, or result screenshots when available
 
-Never fabricate program screenshots. If the app cannot be run locally or the user has not provided screenshots, keep figure entries with `source_file: pending_user_screenshot`, leave visible placeholders in the draft, and list them in evidence gaps.
+Never fabricate test results. Do not move normal function screenshots into this chapter.
 
-### Chapter 6: Conclusion
+### Chapter 7: Conclusion
 
 Write:
 

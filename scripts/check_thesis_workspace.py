@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -324,6 +325,41 @@ def inspect_figure_plan(base: Path) -> list[CheckResult]:
     return checks
 
 
+def inspect_figure_registry(base: Path) -> list[CheckResult]:
+    checks: list[CheckResult] = []
+    registry_path = base / "templates" / "figure-registry.yaml"
+    if not registry_path.exists():
+        return checks
+
+    try:
+        registry = load_yaml(registry_path)
+    except Exception as exc:
+        checks.append(CheckResult("error", str(registry_path), f"parse failed: {exc}"))
+        return checks
+
+    if not isinstance(registry, dict):
+        checks.append(CheckResult("error", str(registry_path), "figure registry must be a mapping"))
+        return checks
+
+    for key, label in (("figures", "figure"), ("tables", "table")):
+        items = registry.get(key) or []
+        if not isinstance(items, list):
+            checks.append(CheckResult("error", str(registry_path), f"{key} must be a list"))
+            continue
+        ids = [
+            str(item.get("id", "")).strip()
+            for item in items
+            if isinstance(item, dict) and str(item.get("id", "")).strip()
+        ]
+        duplicates = sorted(identifier for identifier, count in Counter(ids).items() if count > 1)
+        if duplicates:
+            checks.append(CheckResult("error", str(registry_path), f"duplicate {label} id(s): {', '.join(duplicates)}"))
+        elif ids:
+            checks.append(CheckResult("ok", str(registry_path), f"{len(ids)} {label} id(s) unique"))
+
+    return checks
+
+
 def inspect_template_extract(base: Path) -> list[CheckResult]:
     checks: list[CheckResult] = []
     workspace_root = detect_workspace_root(base)
@@ -408,6 +444,7 @@ def main() -> int:
             if result.status == "ok" and rel_path.endswith((".json", ".yaml", ".yml")):
                 results.append(check_parse(base, rel_path))
         results.extend(inspect_core_fields(base))
+        results.extend(inspect_figure_registry(base))
         results.extend(inspect_chapter4_database_assets(base))
         results.extend(inspect_figure_plan(base))
         results.extend(inspect_template_extract(base))
