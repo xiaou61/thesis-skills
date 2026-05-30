@@ -17,6 +17,7 @@ import argparse
 import json
 import re
 import subprocess
+import struct
 from pathlib import Path
 
 
@@ -83,6 +84,49 @@ def has_picture_child(result: dict | None) -> bool:
         return False
     children = result.get("children") or []
     return any(isinstance(child, dict) and child.get("type") == "picture" for child in children)
+
+
+def parse_cm(value: str) -> float:
+    text = value.strip().lower()
+    if text.endswith("cm"):
+        return float(text[:-2])
+    if text.endswith("in"):
+        return float(text[:-2]) * 2.54
+    return float(text)
+
+
+def format_cm(value: float) -> str:
+    return f"{value:.2f}cm"
+
+
+def png_dimensions(path: Path) -> tuple[int, int] | None:
+    try:
+        with path.open("rb") as handle:
+            header = handle.read(24)
+    except OSError:
+        return None
+    if len(header) < 24 or header[:8] != b"\x89PNG\r\n\x1a\n" or header[12:16] != b"IHDR":
+        return None
+    width, height = struct.unpack(">II", header[16:24])
+    if width <= 0 or height <= 0:
+        return None
+    return width, height
+
+
+def fit_size_from_preview(preview: Path, max_width: str, max_height: str) -> tuple[str, str]:
+    dimensions = png_dimensions(preview)
+    if not dimensions:
+        return max_width, max_height
+    width_px, height_px = dimensions
+    max_w = parse_cm(max_width)
+    max_h = parse_cm(max_height)
+    ratio = width_px / height_px
+    width = max_w
+    height = width / ratio
+    if height > max_h:
+        height = max_h
+        width = height * ratio
+    return format_cm(width), format_cm(height)
 
 
 def add_ole_before_caption(
@@ -172,6 +216,9 @@ def main() -> int:
     parser.add_argument("--officecli", help="Path to officecli executable. Defaults to PATH or .tools/officecli.")
     parser.add_argument("--prog-id", default="Visio.Drawing.15", help="Visio OLE ProgID.")
     parser.add_argument("--keep-static-previews", action="store_true", help="Keep existing PNG preview paragraphs in the DOCX.")
+    parser.add_argument("--fit-preview-aspect", action="store_true", help="Compute OLE display width/height from preview PNG aspect ratio.")
+    parser.add_argument("--max-width", default="14cm", help="Maximum fitted OLE width when --fit-preview-aspect is used.")
+    parser.add_argument("--max-height", default="18cm", help="Maximum fitted OLE height when --fit-preview-aspect is used.")
     args = parser.parse_args()
 
     docx = Path(args.docx).resolve()
@@ -193,6 +240,8 @@ def main() -> int:
             raise FileNotFoundError(vsdx)
         if not preview.exists():
             raise FileNotFoundError(preview)
+        if args.fit_preview_aspect:
+            width, height = fit_size_from_preview(preview, args.max_width, args.max_height)
         embed_one(officecli, docx, caption, vsdx, preview, width, height, args.prog_id, not args.keep_static_previews)
         embedded += 1
 
