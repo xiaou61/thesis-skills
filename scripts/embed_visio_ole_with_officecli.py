@@ -196,6 +196,11 @@ def main() -> int:
         embed_one(officecli, docx, caption, vsdx, preview, width, height, args.prog_id, not args.keep_static_previews)
         embedded += 1
 
+    # OfficeCLI may leave a resident document process alive for speed. Flush and
+    # close it so independent ZIP/OpenXML validators read the updated DOCX from disk.
+    subprocess.run([str(officecli), "save", str(docx)], check=False, capture_output=True, text=True, encoding="utf-8", errors="replace")
+    subprocess.run([str(officecli), "close", str(docx)], check=False, capture_output=True, text=True, encoding="utf-8", errors="replace")
+
     print(json.dumps({"docx": str(docx), "embedded_visio_ole": embedded}, ensure_ascii=False, indent=2))
     return 0
 
