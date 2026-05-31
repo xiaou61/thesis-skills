@@ -48,6 +48,12 @@ The layout script can infer a compact vertical flow from the node order. For mor
 
 Use `layout.direction: "TB"` for login/add/delete process diagrams and `layout.direction: "LR"` or explicit `rank/column` for broader business-flow diagrams.
 
+The layout script writes explicit orthogonal route points to each edge as `points`.
+These route points are generated with node boxes treated as obstacles, following the
+same object-avoiding orthogonal-routing idea used by mature engines such as libavoid
+and ELK. Do not delete `edge.points` from positioned JSON unless you manually re-run
+the crossing check below.
+
 ## Thesis Display Guardrails
 
 Flowcharts must be readable after they are embedded into Word, not only editable in Visio.
@@ -81,11 +87,17 @@ powershell -ExecutionPolicy Bypass -File .\scripts\generate_visio_flowchart_diag
   -OutputPng .\thesis-ai-standard\exports\flowchart-diagram.png
 ```
 
+The check output must show both `overlapPairs: 0` and `connectorCrossings: 0`.
+If `connectorCrossings` is non-zero, adjust `rank`, `column`, `wrapAfter`,
+`routeClearance`, or split the figure before rendering the `.vsdx`.
+
 The Visio script:
 
 - opens Microsoft Visio through COM automation
 - uses `BASFLO_M.VSSX` or `BASFLO_U.VSSX` flowchart masters when available
 - falls back to primitive Visio shapes if a master is missing
+- uses explicit `edge.points` routes when present, so connectors avoid crossing
+  non-endpoint node boxes instead of relying only on Visio's automatic routing
 - writes an editable `.vsdx`
 - exports a `.png` preview for Word insertion
 - prints a JSON summary with node and edge counts

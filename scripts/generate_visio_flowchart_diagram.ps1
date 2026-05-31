@@ -211,6 +211,9 @@ function Add-Label {
   if (-not $Text) {
     return $null
   }
+  if ($PSBoundParameters.ContainsKey("Width") -eq $false) {
+    $Width = [Math]::Max(0.34, [Math]::Min(0.9, 0.16 + ($Text.Length * 0.16)))
+  }
   $label = $Page.DrawRectangle($X - ($Width / 2), $Y - ($Height / 2), $X + ($Width / 2), $Y + ($Height / 2))
   $label.Text = $Text
   Set-CellFormula -Shape $label -CellName "LinePattern" -Formula "0"
@@ -342,6 +345,111 @@ function Set-FlowLineStyle {
   }
 }
 
+function Get-PointValue {
+  param(
+    [Parameter(Mandatory = $true)] $Point,
+    [Parameter(Mandatory = $true)] [string] $Name
+  )
+  $value = Get-Prop $Point $Name $null
+  if ($null -eq $value) {
+    throw "Route point is missing '$Name'."
+  }
+  return [double] $value
+}
+
+function Get-RoutePoints {
+  param([object] $Edge)
+  $points = @()
+  foreach ($point in @(As-Array (Get-Prop $Edge "points"))) {
+    try {
+      $points += [pscustomobject]@{
+        X = Get-PointValue -Point $point -Name "x"
+        Y = Get-PointValue -Point $point -Name "y"
+      }
+    } catch {
+      Write-Verbose "Skipped invalid route point: $_"
+    }
+  }
+  return @($points)
+}
+
+function Clamp-Unit {
+  param([double] $Value)
+  if ($Value -lt 0.0) { return 0.0 }
+  if ($Value -gt 1.0) { return 1.0 }
+  return $Value
+}
+
+function Get-GluePointFromCoordinate {
+  param(
+    [Parameter(Mandatory = $true)] $Shape,
+    [double] $X,
+    [double] $Y
+  )
+  $pinX = [double] $Shape.CellsU("PinX").ResultIU
+  $pinY = [double] $Shape.CellsU("PinY").ResultIU
+  $width = [double] $Shape.CellsU("Width").ResultIU
+  $height = [double] $Shape.CellsU("Height").ResultIU
+  if ($width -le 0 -or $height -le 0) {
+    return @{ X = 0.5; Y = 0.5 }
+  }
+  return @{
+    X = Clamp-Unit (($X - ($pinX - ($width / 2))) / $width)
+    Y = Clamp-Unit (($Y - ($pinY - ($height / 2))) / $height)
+  }
+}
+
+function Add-RouteLabel {
+  param(
+    [Parameter(Mandatory = $true)] $Page,
+    [string] $Text,
+    [Parameter(Mandatory = $true)] [object[]] $Points
+  )
+  if (-not $Text -or $Points.Count -lt 2) {
+    return
+  }
+  $segmentCount = $Points.Count - 1
+  $index = [Math]::Max(0, [Math]::Min($segmentCount - 1, [int] [Math]::Floor($segmentCount / 2)))
+  $a = $Points[$index]
+  $b = $Points[$index + 1]
+  Add-Label -Page $Page -Text $Text -X (($a.X + $b.X) / 2) -Y (($a.Y + $b.Y) / 2) | Out-Null
+}
+
+function Connect-RoutedEdge {
+  param(
+    [Parameter(Mandatory = $true)] $Page,
+    [Parameter(Mandatory = $true)] $From,
+    [Parameter(Mandatory = $true)] $To,
+    [Parameter(Mandatory = $true)] [object[]] $Points,
+    [string] $Label = "",
+    [switch] $Dashed
+  )
+  if ($Points.Count -lt 2) {
+    return @()
+  }
+  $segments = @()
+  for ($idx = 0; $idx -lt ($Points.Count - 1); $idx += 1) {
+    $a = $Points[$idx]
+    $b = $Points[$idx + 1]
+    if ([Math]::Abs($a.X - $b.X) -lt 0.001 -and [Math]::Abs($a.Y - $b.Y) -lt 0.001) {
+      continue
+    }
+    $line = $Page.DrawLine($a.X, $a.Y, $b.X, $b.Y)
+    Set-FlowLineStyle -Line $line -Arrow:($idx -eq ($Points.Count - 2)) -Dashed:$Dashed
+    if ($idx -eq 0) {
+      $fromPoint = Get-GluePointFromCoordinate -Shape $From -X $a.X -Y $a.Y
+      try { $line.CellsU("BeginX").GlueToPos($From, $fromPoint.X, $fromPoint.Y) } catch {}
+    }
+    if ($idx -eq ($Points.Count - 2)) {
+      $toPoint = Get-GluePointFromCoordinate -Shape $To -X $b.X -Y $b.Y
+      try { $line.CellsU("EndX").GlueToPos($To, $toPoint.X, $toPoint.Y) } catch {}
+    }
+    $segments += $line
+  }
+  Add-RouteLabel -Page $Page -Text $Label -Points $Points
+  return @($segments)
+}
+
 function Connect-BackEdge {
   param(
     [Parameter(Mandatory = $true)] $Page,
@@ -416,18 +524,23 @@ function Render-FlowchartDiagram {
     if ($nodeShapes.ContainsKey($fromId) -and $nodeShapes.ContainsKey($toId)) {
       $dashed = [bool] (Get-Prop $edge "dashed" $false)
       $route = (As-Text (Get-Prop $edge "route")).ToLowerInvariant()
-      $fromY = [double] $nodeShapes[$fromId].CellsU("PinY").ResultIU
-      $toY = [double] $nodeShapes[$toId].CellsU("PinY").ResultIU
-      $isBackEdge = $route -in @("back", "loop", "return") -or ($toY -gt ($fromY + 0.05))
-      if ($isBackEdge) {
+      $points = Get-RoutePoints -Edge $edge
+      if ($points.Count -ge 2) {
+        Connect-RoutedEdge -Page $Page -From $nodeShapes[$fromId] -To $nodeShapes[$toId] -Points $points -Label (As-Text (Get-Prop $edge "label")) -Dashed:$dashed | Out-Null
+      } else {
+        $fromY = [double] $nodeShapes[$fromId].CellsU("PinY").ResultIU
+        $toY = [double] $nodeShapes[$toId].CellsU("PinY").ResultIU
+        $isBackEdge = $route -in @("back", "loop", "return") -or ($toY -gt ($fromY + 0.05))
+        if ($isBackEdge) {
         $side = (As-Text (Get-Prop $edge "side"))
         if (-not $side) {
           $side = if (($backEdgeIndex % 2) -eq 0) { "right" } else { "left" }
         }
         Connect-BackEdge -Page $Page -From $nodeShapes[$fromId] -To $nodeShapes[$toId] -Side $side -Label (As-Text (Get-Prop $edge "label")) -Dashed:$dashed | Out-Null
         $backEdgeIndex += 1
-      } else {
-        Connect-FlowShapes -Page $Page -ConnectorMaster $ConnectorMaster -From $nodeShapes[$fromId] -To $nodeShapes[$toId] -Label (As-Text (Get-Prop $edge "label")) -Dashed:$dashed | Out-Null
+        } else {
+          Connect-FlowShapes -Page $Page -ConnectorMaster $ConnectorMaster -From $nodeShapes[$fromId] -To $nodeShapes[$toId] -Label (As-Text (Get-Prop $edge "label")) -Dashed:$dashed | Out-Null
+        }
       }
       $edgeCount += 1
     } else {
