@@ -56,6 +56,8 @@ python .\scripts\check_docx_three_line_tables.py .\paper.docx
 
 For structural thesis figures generated as `.vsdx`, the final `.docx` should contain a Visio OLE object, not only a static PNG. The PNG export is a preview thumbnail for the OLE object and may also be used in PDF export, but it is not the editable source.
 
+Figure captions and the OLE figure map must use the same display text as the school template. If the template uses `图 4.1` and `表4.1`, do not embed with stale map captions such as `图4-1`; OfficeCLI will not find the caption paragraph.
+
 Use OfficeCLI when available:
 
 ```powershell
@@ -71,7 +73,7 @@ The figure map is a JSON list:
 ```json
 [
   {
-    "caption": "图4-1 系统功能结构图",
+    "caption": "图 4.1 系统功能结构图",
     "vsdx": "F:/paper-context/figures/figure-4-1-function-architecture.vsdx",
     "preview": "F:/paper-context/figures/figure-4-1-function-architecture.png",
     "width": "14cm",

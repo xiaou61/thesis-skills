@@ -24,6 +24,13 @@ from typing import Any
 from create_three_line_table import build_caption_xml, build_table_xml
 
 
+def display_id(label: str) -> str:
+    normalized = label.replace("-", ".")
+    if normalized.startswith("图") and len(normalized) > 1 and normalized[1] != " ":
+        return f"图 {normalized[1:]}"
+    return normalized
+
+
 def load_model(path: Path) -> dict[str, Any]:
     text = path.read_text(encoding="utf-8")
     if path.suffix.lower() == ".json":
@@ -162,7 +169,7 @@ def build_overview(model: dict[str, Any], entities: list[dict[str, Any]], relati
                 "priority": item.get("priority", index),
                 "attributes": [
                     {
-                        "name": field["description"] if field["description"] != field["name"] else field["name"],
+                        "name": er_attribute_label(field),
                         "key": truthy(field.get("key")),
                         "priority": 100 if truthy(field.get("key")) else max(0, 20 - field_index),
                     }
@@ -176,6 +183,19 @@ def build_overview(model: dict[str, Any], entities: list[dict[str, Any]], relati
 
 
 def build_single_entity(entity: dict[str, Any]) -> dict[str, Any]:
+    fields = list(entity["fields"])
+    diagram_fields: list[dict[str, Any]] = []
+    if fields:
+        keyed = [field for field in fields if truthy(field.get("key"))]
+        rest = [
+            field
+            for field in fields
+            if not truthy(field.get("key"))
+            and field.get("name") not in {"create_time", "update_time", "deleted"}
+            and "逻辑删除" not in str(field.get("description", ""))
+        ]
+        diagram_fields = [*keyed, *rest[:7]]
+    omitted = [field["name"] for field in fields if field not in diagram_fields]
     return {
         "diagramType": "single_entity",
         "title": f"{entity['name']}E-R图",
@@ -183,13 +203,17 @@ def build_single_entity(entity: dict[str, Any]) -> dict[str, Any]:
             "name": entity["name"],
             "attributes": [
                 {
-                    "name": field["description"] if field["description"] != field["name"] else field["name"],
+                    "name": er_attribute_label(field),
                     "key": truthy(field.get("key")),
                     "field": field["name"],
                     "type": field["type"],
                 }
-                for field in entity["fields"]
+                for field in diagram_fields
             ],
+        },
+        "layoutNotes": {
+            "attributeDisplay": "core_fields_only",
+            "omittedFieldsInTable": omitted,
         },
     }
 
@@ -209,6 +233,19 @@ def table_rows(entity: dict[str, Any]) -> list[list[str]]:
     return rows
 
 
+def er_attribute_label(field: dict[str, Any]) -> str:
+    description = str(field.get("description") or "").strip()
+    name = str(field.get("name") or "").strip()
+    if description:
+        cleaned = re.sub(r"[（(].*?[）)]", "", description).strip()
+        cleaned = re.sub(r"\s+", "", cleaned)
+        if cleaned and len(cleaned) <= 8:
+            return cleaned
+        if len(description) <= 8:
+            return description
+    return name or description
+
+
 def write_table_xml(path: Path, caption: str, entity: dict[str, Any]) -> None:
     headers = ["字段名", "类型", "主键", "允许空", "说明"]
     path.write_text(build_caption_xml(caption) + "\n" + build_table_xml(headers, table_rows(entity)), encoding="utf-8")
@@ -217,7 +254,7 @@ def write_table_xml(path: Path, caption: str, entity: dict[str, Any]) -> None:
 def render_tables_markdown(entities: list[dict[str, Any]], table_start: int) -> str:
     lines = ["# Chapter 4 Database Tables", ""]
     for index, entity in enumerate(entities, start=table_start):
-        lines.append(f"## 表4-{index} {entity['name']}表")
+        lines.append(f"## {display_id(f'表4-{index}')} {entity['name']}表")
         lines.append("")
         lines.append("| 字段名 | 类型 | 主键 | 允许空 | 说明 |")
         lines.append("| --- | --- | --- | --- | --- |")
@@ -285,16 +322,16 @@ def render_chapter_section(entities: list[dict[str, Any]], relationships: list[d
         "",
         "根据系统功能需求，数据库概念结构围绕核心业务对象展开。总E-R图用于展示实体之间的主要关系，单实体E-R图用于展示每个实体的完整属性，避免总图因字段过多而拥挤。",
         "",
-        f"系统总体E-R图见图4-{figure_start}。",
+        f"系统总体E-R图见{display_id(f'图4-{figure_start}')}。",
         "",
     ]
     figure_no = figure_start + 1
     for entity in entities:
-        lines.append(f"{entity['name']}实体用于{entity['purpose']}，其单实体E-R图见图4-{figure_no}。")
+        lines.append(f"{entity['name']}实体用于{entity['purpose']}，其单实体E-R图见{display_id(f'图4-{figure_no}')}。")
         figure_no += 1
     lines.extend(["", "### 数据库表设计", ""])
     for offset, entity in enumerate(entities):
-        lines.append(f"{entity['name']}表用于{entity['purpose']}，字段设计见表4-{table_start + offset}。")
+        lines.append(f"{entity['name']}表用于{entity['purpose']}，字段设计见{display_id(f'表4-{table_start + offset}')}。")
     if relationships:
         lines.extend(["", "实体关系说明如下："])
         for rel in relationships:
@@ -348,7 +385,7 @@ def main() -> int:
             encoding="utf-8",
         )
         table_no = args.table_start + index
-        write_table_xml(table_dir / f"table-4-{table_no}-{safe}.xml", f"表4-{table_no} {entity['name']}表", entity)
+        write_table_xml(table_dir / f"table-4-{table_no}-{safe}.xml", f"{display_id(f'表4-{table_no}')} {entity['name']}表", entity)
 
     (out / "database-tables.md").write_text(render_tables_markdown(entities, args.table_start), encoding="utf-8")
     (out / "figure-registry-fragment.yaml").write_text(

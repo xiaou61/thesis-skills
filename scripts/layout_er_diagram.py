@@ -31,7 +31,7 @@ LABEL_H = 0.18
 PAD = 0.08
 DEFAULT_OVERVIEW_LIMITS = {
     "maxEntities": 8,
-    "maxAttributesPerEntity": 3,
+    "maxAttributesPerEntity": 0,
     "maxRelationships": 8,
 }
 
@@ -59,6 +59,9 @@ class Box:
     @property
     def top(self) -> float:
         return self.y + self.h / 2
+
+    def inflated(self, pad: float) -> "Box":
+        return Box(self.x, self.y, self.w + pad * 2, self.h + pad * 2, self.kind)
 
 
 def as_list(value: Any) -> list[Any]:
@@ -168,6 +171,94 @@ def page_outside_penalty(x: float, y: float, w: float, h: float, page_w: float, 
     return outside
 
 
+def same_box(a: Box, b: Box, eps: float = 0.001) -> bool:
+    return (
+        abs(a.x - b.x) <= eps
+        and abs(a.y - b.y) <= eps
+        and abs(a.w - b.w) <= eps
+        and abs(a.h - b.h) <= eps
+        and a.kind == b.kind
+    )
+
+
+def boundary_point(source: Box, target: Box) -> tuple[float, float]:
+    dx = target.x - source.x
+    dy = target.y - source.y
+    if abs(dx) < 0.001 and abs(dy) < 0.001:
+        return source.x, source.y
+    scale_x = (source.w / 2) / abs(dx) if abs(dx) > 0.001 else float("inf")
+    scale_y = (source.h / 2) / abs(dy) if abs(dy) > 0.001 else float("inf")
+    scale = min(scale_x, scale_y)
+    return source.x + dx * scale, source.y + dy * scale
+
+
+def point_in_box(point: tuple[float, float], box: Box, eps: float = 0.001) -> bool:
+    x, y = point
+    return box.left + eps < x < box.right - eps and box.bottom + eps < y < box.top - eps
+
+
+def orientation(a: tuple[float, float], b: tuple[float, float], c: tuple[float, float]) -> float:
+    return (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0])
+
+
+def on_segment(a: tuple[float, float], b: tuple[float, float], c: tuple[float, float], eps: float = 0.001) -> bool:
+    return (
+        min(a[0], c[0]) - eps <= b[0] <= max(a[0], c[0]) + eps
+        and min(a[1], c[1]) - eps <= b[1] <= max(a[1], c[1]) + eps
+        and abs(orientation(a, b, c)) <= eps
+    )
+
+
+def segments_intersect(
+    a: tuple[float, float],
+    b: tuple[float, float],
+    c: tuple[float, float],
+    d: tuple[float, float],
+    eps: float = 0.001,
+) -> bool:
+    o1 = orientation(a, b, c)
+    o2 = orientation(a, b, d)
+    o3 = orientation(c, d, a)
+    o4 = orientation(c, d, b)
+    if o1 * o2 < -eps and o3 * o4 < -eps:
+        return True
+    return (
+        on_segment(a, c, b, eps)
+        or on_segment(a, d, b, eps)
+        or on_segment(c, a, d, eps)
+        or on_segment(c, b, d, eps)
+    )
+
+
+def segment_intersects_box(a: tuple[float, float], b: tuple[float, float], box: Box) -> bool:
+    if point_in_box(a, box) or point_in_box(b, box):
+        return True
+    corners = [
+        (box.left, box.bottom),
+        (box.right, box.bottom),
+        (box.right, box.top),
+        (box.left, box.top),
+    ]
+    sides = list(zip(corners, corners[1:] + corners[:1]))
+    return any(segments_intersect(a, b, c, d) for c, d in sides)
+
+
+def segment_crossing_count(
+    a: tuple[float, float],
+    b: tuple[float, float],
+    obstacles: list[Box],
+    exclude: tuple[Box, ...] = (),
+    pad: float = 0.02,
+) -> int:
+    count = 0
+    for obstacle in obstacles:
+        if any(same_box(obstacle, item) for item in exclude):
+            continue
+        if segment_intersects_box(a, b, obstacle.inflated(pad)):
+            count += 1
+    return count
+
+
 def overview_ring_angles(count: int) -> list[float]:
     """Return balanced angles with the first two hubs on opposite sides."""
 
@@ -207,6 +298,13 @@ def sort_hubs(entities: list[dict[str, Any]], relationships: list[dict[str, Any]
             bonus += 0.25
         name_bonus[eid] = bonus
     return sorted(degrees, key=lambda item: (degrees[item] + name_bonus.get(item, 0.0), degrees[item]), reverse=True)
+
+
+def hub_spoke_angles(count: int) -> list[float]:
+    preferred = [0, 55, -55, 125, -125, 180, 90, -90, 35, -35, 145, -145]
+    if count <= len(preferred):
+        return [math.radians(item) for item in preferred[:count]]
+    return [2 * math.pi * i / max(1, count) for i in range(count)]
 
 
 def apply_overview_limits(diagram: dict[str, Any]) -> None:
@@ -287,7 +385,7 @@ def apply_overview_limits(diagram: dict[str, Any]) -> None:
         relationships = [rel for idx, rel in enumerate(relationships) if idx in keep_indexes]
 
     max_attrs = limits.get("maxAttributesPerEntity", 0)
-    if max_attrs > 0:
+    if max_attrs >= 0:
         for entity in entities:
             attrs = as_list(entity.get("attributes"))
             if len(attrs) <= max_attrs:
@@ -295,7 +393,7 @@ def apply_overview_limits(diagram: dict[str, Any]) -> None:
             keyed = [(idx, attr) for idx, attr in enumerate(attrs) if attr_is_key(attr)]
             rest = [(idx, attr) for idx, attr in enumerate(attrs) if not attr_is_key(attr)]
             rest.sort(key=lambda item: (attr_priority(item[1]), -item[0]), reverse=True)
-            selected = keyed[:max_attrs]
+            selected = [] if max_attrs == 0 else keyed[:max_attrs]
             remaining_slots = max_attrs - len(selected)
             if remaining_slots > 0:
                 selected.extend(rest[:remaining_slots])
@@ -363,17 +461,35 @@ def place_entities(diagram: dict[str, Any]) -> tuple[float, float, dict[str, tup
         ordered.extend(eid for eid in ids if eid not in ordered)
         center_x = page_w / 2
         center_y = page_h / 2
-        radius_x = max(2.25, min(page_w * 0.34, page_w / 2 - 1.05))
-        radius_y = max(1.45, min(page_h * 0.31, page_h / 2 - 0.72))
-        for eid, angle in zip(ordered, overview_ring_angles(len(ordered))):
-            if eid in positions:
-                continue
-            x = center_x + math.cos(angle) * radius_x
-            y = center_y + math.sin(angle) * radius_y
-            positions[eid] = (
-                min(max(x, ENTITY_W / 2 + 0.35), page_w - ENTITY_W / 2 - 0.35),
-                min(max(y, ENTITY_H / 2 + 0.35), page_h - ENTITY_H / 2 - 0.35),
-            )
+        degrees = build_degrees([e for e in entities if isinstance(e, dict)], relationships)
+        hub_id = ordered[0] if ordered else ""
+        hub_degree = degrees.get(hub_id, 0)
+        if hub_id and hub_degree >= max(3, math.ceil(len(relationships) * 0.45)):
+            positions.setdefault(hub_id, (center_x, center_y))
+            spokes = [eid for eid in ordered if eid != hub_id]
+            radius_x = max(2.85, min(page_w * 0.38, page_w / 2 - 0.95))
+            radius_y = max(1.75, min(page_h * 0.34, page_h / 2 - 0.62))
+            for eid, angle in zip(spokes, hub_spoke_angles(len(spokes))):
+                if eid in positions:
+                    continue
+                x = center_x + math.cos(angle) * radius_x
+                y = center_y + math.sin(angle) * radius_y
+                positions[eid] = (
+                    min(max(x, ENTITY_W / 2 + 0.35), page_w - ENTITY_W / 2 - 0.35),
+                    min(max(y, ENTITY_H / 2 + 0.35), page_h - ENTITY_H / 2 - 0.35),
+                )
+        else:
+            radius_x = max(2.25, min(page_w * 0.34, page_w / 2 - 1.05))
+            radius_y = max(1.45, min(page_h * 0.31, page_h / 2 - 0.72))
+            for eid, angle in zip(ordered, overview_ring_angles(len(ordered))):
+                if eid in positions:
+                    continue
+                x = center_x + math.cos(angle) * radius_x
+                y = center_y + math.sin(angle) * radius_y
+                positions[eid] = (
+                    min(max(x, ENTITY_W / 2 + 0.35), page_w - ENTITY_W / 2 - 0.35),
+                    min(max(y, ENTITY_H / 2 + 0.35), page_h - ENTITY_H / 2 - 0.35),
+                )
 
     for i, entity in enumerate(entities):
         if not isinstance(entity, dict):
@@ -394,6 +510,7 @@ def place_relationships(
     page_h: float,
 ) -> list[Box]:
     placed: list[Box] = []
+    placed_segments: list[tuple[tuple[float, float], tuple[float, float]]] = []
     for idx, rel in enumerate(as_list(diagram.get("relationships"))):
         if not isinstance(rel, dict):
             continue
@@ -415,22 +532,41 @@ def place_relationships(
             for t in (0.50, 0.42, 0.58, 0.34, 0.66):
                 base_x = sx + dx * t
                 base_y = sy + dy * t
-                for offset in (0.0, 0.38, -0.38, 0.68, -0.68, 0.98, -0.98, 1.28, -1.28):
+                for offset in (0.0, 0.38, -0.38, 0.68, -0.68, 0.98, -0.98, 1.28, -1.28, 1.68, -1.68, 2.08, -2.08):
                     preference = abs(t - 0.50) * 3.0 + abs(offset) * 0.6
                     candidates.append((base_x + px * offset, base_y + py * offset, preference))
+            for radius in (0.95, 1.25, 1.55, 1.9, 2.25, 2.65):
+                for delta_deg in (0, -18, 18, -34, 34, -52, 52, -76, 76):
+                    angle = math.atan2(dy, dx) + math.radians(delta_deg)
+                    base_x = sx + math.cos(angle) * radius
+                    base_y = sy + math.sin(angle) * radius
+                    preference = abs(delta_deg) / 45.0 + abs(radius - min(max(length * 0.42, 1.05), 1.8)) * 0.4
+                    candidates.append((base_x, base_y, preference))
 
             def relationship_score(candidate: tuple[float, float, float]) -> float:
                 cx, cy, preference = candidate
                 box = Box(cx, cy, REL_W, REL_H, "relationship")
                 overlap = sum(bbox_overlap(box, other) for other in occupied + placed)
                 outside = page_outside_penalty(cx, cy, REL_W, REL_H, page_w, page_h)
-                return overlap * 10000 + outside * 1000 + preference
+                crossings = 0
+                src_box = Box(sx, sy, ENTITY_W, ENTITY_H, "entity")
+                dst_box = Box(tx, ty, ENTITY_W, ENTITY_H, "entity")
+                obstacles = occupied + placed
+                crossings += segment_crossing_count(boundary_point(src_box, box), boundary_point(box, src_box), obstacles, (src_box, box))
+                crossings += segment_crossing_count(boundary_point(dst_box, box), boundary_point(box, dst_box), obstacles, (dst_box, box))
+                segment_hits = sum(1 for start, end in placed_segments if segment_intersects_box(start, end, box.inflated(0.03)))
+                return overlap * 10000 + crossings * 7500 + segment_hits * 9000 + outside * 1000 + preference
 
             best = min(candidates, key=relationship_score)
             x, y, _ = best
         rel["x"] = round(x, 3)
         rel["y"] = round(y, 3)
-        placed.append(Box(x, y, REL_W, REL_H, "relationship"))
+        box = Box(x, y, REL_W, REL_H, "relationship")
+        placed.append(box)
+        src_box = Box(sx, sy, ENTITY_W, ENTITY_H, "entity")
+        dst_box = Box(tx, ty, ENTITY_W, ENTITY_H, "entity")
+        placed_segments.append((boundary_point(src_box, box), boundary_point(box, src_box)))
+        placed_segments.append((boundary_point(dst_box, box), boundary_point(box, dst_box)))
     occupied.extend(placed)
     return placed
 
@@ -501,7 +637,9 @@ def place_attributes(diagram: dict[str, Any], page_w: float, page_h: float, occu
                 outside = page_outside_penalty(x, y, ATTR_W, ATTR_H, page_w, page_h) * 20
                 prefer_outward = angle_distance(angle, out_angle)
                 distance = math.hypot(x - ex, y - ey)
-                score = overlap * 2500 + outside * 100 + prefer_outward * 2.0 + distance * 0.2
+                entity_box = Box(ex, ey, ENTITY_W, ENTITY_H, "entity")
+                crossings = segment_crossing_count(boundary_point(entity_box, box), boundary_point(box, entity_box), occupied, (entity_box, box))
+                score = overlap * 2500 + crossings * 1800 + outside * 100 + prefer_outward * 2.0 + distance * 0.2
                 if score < best_score:
                     best_score = score
                     best = (x, y, angle)
@@ -646,14 +784,14 @@ def layout_single_entity(diagram: dict[str, Any]) -> None:
         diagram["entity"] = entity
     attrs = as_list(entity.get("attributes"))
     layout = diagram.setdefault("layout", {})
-    radius_x = max(2.2, min(4.2, 1.8 + len(attrs) * 0.22))
-    radius_y = max(1.55, min(3.1, 1.25 + len(attrs) * 0.16))
-    page_w = float(layout.get("pageWidth") or max(6.0, 2.0 + radius_x * 2))
-    page_h = float(layout.get("pageHeight") or max(4.4, 1.45 + radius_y * 2))
+    radius_x = max(2.15, min(3.55, 1.85 + len(attrs) * 0.16))
+    radius_y = max(1.45, min(2.25, 1.15 + len(attrs) * 0.10))
+    page_w = float(layout.get("pageWidth") or max(6.0, 2.2 + radius_x * 2))
+    page_h = float(layout.get("pageHeight") or max(3.8, 1.85 + radius_y * 2))
     layout["pageWidth"] = page_w
     layout["pageHeight"] = page_h
     layout.setdefault("entityX", round(page_w / 2, 3))
-    layout.setdefault("entityY", round(page_h / 2, 3))
+    layout.setdefault("entityY", round(max(0.8, page_h * 0.28), 3))
 
     ex = float(layout["entityX"])
     ey = float(layout["entityY"])
@@ -668,10 +806,14 @@ def layout_single_entity(diagram: dict[str, Any]) -> None:
         else:
             continue
         if attr_obj.get("dx") is None or attr_obj.get("dy") is None:
-            nominal_angle = math.radians(90 - (360 * idx / max(1, len(attrs))))
+            if len(attrs) == 1:
+                nominal_angle = math.radians(90)
+            else:
+                start_deg, end_deg = 172.0, 8.0
+                nominal_angle = math.radians(start_deg + (end_deg - start_deg) * idx / max(1, len(attrs) - 1))
             candidates: list[tuple[float, float, float]] = []
             for radius_scale in (1.0, 1.16, 1.32):
-                for delta_deg in (0, -12, 12, -24, 24, -36, 36, 180):
+                for delta_deg in (0, -10, 10, -20, 20, -32, 32, -46, 46):
                     angle = nominal_angle + math.radians(delta_deg)
                     x = ex + math.cos(angle) * radius_x * radius_scale
                     y = ey + math.sin(angle) * radius_y * radius_scale
@@ -684,7 +826,8 @@ def layout_single_entity(diagram: dict[str, Any]) -> None:
                 overlap = sum(bbox_overlap(box, other) for other in occupied)
                 outside = page_outside_penalty(x, y, ATTR_W, ATTR_H, page_w, page_h)
                 distance = math.hypot(x - ex, y - ey)
-                return overlap * 10000 + outside * 1000 + preference * 5 + distance * 0.05
+                crossings = segment_crossing_count(boundary_point(entity_box, box), boundary_point(box, entity_box), occupied, (entity_box, box))
+                return overlap * 10000 + crossings * 6000 + outside * 1000 + preference * 5 + distance * 0.05
 
             ax, ay, _ = min(candidates, key=attribute_score)
             attr_obj["dx"] = round(ax - ex, 3)

@@ -71,7 +71,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\generate_visio_er_diagram.ps1
 
 For each single entity JSON, run the same layout and Visio commands and number figures after the overview.
 
-After layout, run `scripts/check_er_layout.py` on every positioned JSON. Fix layout or reduce overview limits until every check reports `overlapPairs: 0`.
+After layout, run `scripts/check_er_layout.py` on every positioned JSON. Fix layout or reduce overview limits until every check reports `overlapPairs: 0` and `connectorCrossings: 0`. If a high-degree entity creates many lines from one area, use the hub-spoke overview layout, set overview attributes to `0`, and rely on single-entity E-R diagrams for fields.
 
 ## Drafting Guidance
 
@@ -83,4 +83,4 @@ Chapter 4 should include:
 - single-entity E-R figures for important entities
 - three-line tables for all database/data-object tables used in the thesis scope
 
-Keep overview E-R sparse. The default overview limit is 8 entities, 8 relationships, and 3 representative attributes per entity. Put complete fields in single-entity E-R figures and database tables.
+Keep overview E-R sparse. The default overview limit is 8 entities, 8 relationships, and 0 attributes per entity for normal system theses. Put fields in single-entity E-R figures and database tables. Single-entity figures should keep only core fields in the oval layout and leave full field lists to the three-line tables.

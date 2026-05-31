@@ -359,14 +359,52 @@ function Get-GluePointToward {
   return @{ X = 0.5; Y = 0.0 }
 }
 
+function Get-BoundaryGluePointToward {
+  param(
+    [Parameter(Mandatory = $true)] $From,
+    [Parameter(Mandatory = $true)] $To
+  )
+  try {
+    $fromX = [double] $From.CellsU("PinX").ResultIU
+    $fromY = [double] $From.CellsU("PinY").ResultIU
+    $fromW = [double] $From.CellsU("Width").ResultIU
+    $fromH = [double] $From.CellsU("Height").ResultIU
+    $toX = [double] $To.CellsU("PinX").ResultIU
+    $toY = [double] $To.CellsU("PinY").ResultIU
+  } catch {
+    return @{ X = 0.5; Y = 0.5 }
+  }
+  $dx = $toX - $fromX
+  $dy = $toY - $fromY
+  if ([Math]::Abs($dx) -lt 0.001 -and [Math]::Abs($dy) -lt 0.001) {
+    return @{ X = 0.5; Y = 0.5 }
+  }
+  $scaleX = if ([Math]::Abs($dx) -gt 0.001) { ($fromW / 2.0) / [Math]::Abs($dx) } else { [double]::PositiveInfinity }
+  $scaleY = if ([Math]::Abs($dy) -gt 0.001) { ($fromH / 2.0) / [Math]::Abs($dy) } else { [double]::PositiveInfinity }
+  $scale = [Math]::Min($scaleX, $scaleY)
+  $edgeX = $fromX + ($dx * $scale)
+  $edgeY = $fromY + ($dy * $scale)
+  $localX = ($edgeX - ($fromX - ($fromW / 2.0))) / $fromW
+  $localY = ($edgeY - ($fromY - ($fromH / 2.0))) / $fromH
+  $localX = [Math]::Max(0.0, [Math]::Min(1.0, $localX))
+  $localY = [Math]::Max(0.0, [Math]::Min(1.0, $localY))
+  return @{ X = $localX; Y = $localY }
+}
+
 function Connect-Toward {
   param(
     [Parameter(Mandatory = $true)] $Page,
     [Parameter(Mandatory = $true)] $From,
-    [Parameter(Mandatory = $true)] $To
+    [Parameter(Mandatory = $true)] $To,
+    [switch] $UseBoundaryPoint
   )
-  $fromPoint = Get-GluePointToward -From $From -To $To
-  $toPoint = Get-GluePointToward -From $To -To $From
+  if ($UseBoundaryPoint) {
+    $fromPoint = Get-BoundaryGluePointToward -From $From -To $To
+    $toPoint = Get-BoundaryGluePointToward -From $To -To $From
+  } else {
+    $fromPoint = Get-GluePointToward -From $From -To $To
+    $toPoint = Get-GluePointToward -From $To -To $From
+  }
   return Connect-Shapes -Page $Page -From $From -To $To -FromX $fromPoint.X -FromY $fromPoint.Y -ToX $toPoint.X -ToY $toPoint.Y
 }
 
@@ -421,7 +459,7 @@ function Add-Attributes {
       $isKey = [bool] $keyValue
     }
     $shape = New-EllipseShape -Page $Page -Master $EllipseMaster -X ($entityX + $offset.Dx) -Y ($entityY + $offset.Dy) -Width 1.05 -Height 0.42 -Text $name -Bold ([int] $isKey)
-    Connect-Toward -Page $Page -From $EntityShape -To $shape | Out-Null
+    Connect-Toward -Page $Page -From $EntityShape -To $shape -UseBoundaryPoint | Out-Null
     $created.Add($shape)
   }
   return $created
@@ -509,7 +547,9 @@ function Render-OverviewDiagram {
     $entityShapes[$id] = $shape
     $attributes = @(As-Array (Get-Prop $entity "attributes"))
     $attributeCount += $attributes.Count
-    Add-Attributes -Page $Page -EllipseMaster $EllipseMaster -EntityShape $shape -Attributes $attributes -DefaultRadiusX 1.55 -DefaultRadiusY 1.0 | Out-Null
+    if ($attributes.Count -gt 0) {
+      Add-Attributes -Page $Page -EllipseMaster $EllipseMaster -EntityShape $shape -Attributes $attributes -DefaultRadiusX 1.55 -DefaultRadiusY 1.0 | Out-Null
+    }
   }
 
   $relationships = @(As-Array (Get-Prop $Diagram "relationships"))

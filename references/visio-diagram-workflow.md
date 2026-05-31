@@ -37,7 +37,7 @@ Optional attribute objects may include `dx` and `dy` to control their positions 
   "title": "系统总体E-R图",
   "limits": {
     "maxEntities": 8,
-    "maxAttributesPerEntity": 3,
+    "maxAttributesPerEntity": 0,
     "maxRelationships": 8
   },
   "layout": {
@@ -76,11 +76,11 @@ Entity `x/y` and relationship `x/y` are Visio page coordinates in inches. Use th
 For overview diagrams, keep the picture intentionally sparse:
 
 - `maxEntities`: keep only the most central entities in the overview
-- `maxAttributesPerEntity`: show primary keys and several representative attributes
+- `maxAttributesPerEntity`: use `0` by default for crowded system overview E-R diagrams; show fields in single-entity E-R diagrams and database tables
 - `maxRelationships`: keep the main relationship lines
 
 The layout script records omitted entities, relationships, and attributes in `layoutNotes`. Use single entity ER diagrams and database table design sections for the omitted detail.
-For crowded thesis overview ER diagrams, reduce `maxAttributesPerEntity` to 2 and create separate single-entity ER diagrams for the full fields.
+For crowded thesis overview ER diagrams, do not force attributes into the overview. A clean overview should prioritize entity-relationship readability, then use separate single-entity ER diagrams for attributes.
 The layout command also accepts `--max-entities`, `--max-attributes-per-entity`, and `--max-relationships` for temporary preview variants without editing the source JSON.
 
 ## Generate Editable Visio Output
@@ -91,6 +91,9 @@ Run from the repository root:
 python .\scripts\layout_er_diagram.py `
   .\paper-context\evidence\er-model.json `
   --out .\paper-context\evidence\er-model.positioned.json
+
+python .\scripts\check_er_layout.py `
+  .\paper-context\evidence\er-model.positioned.json
 
 powershell -ExecutionPolicy Bypass -File .\scripts\generate_visio_er_diagram.ps1 `
   -InputJson .\paper-context\evidence\er-model.positioned.json `
@@ -104,9 +107,12 @@ The script:
 - uses Visio basic masters for rectangles, ellipses, and diamonds when available
 - falls back to primitive Visio drawing calls if a master is missing
 - respects precomputed entity, attribute, relationship, and cardinality-label positions
+- draws attribute lines from dispersed boundary points instead of one common center
 - writes an editable `.vsdx`
 - exports a `.png` preview for Word insertion
 - prints a JSON summary with entity, attribute, and relationship counts
+
+Do not render or embed an ER diagram if `check_er_layout.py` reports nonzero `overlapPairs` or `connectorCrossings`. Fix the layout, reduce overview detail, or split the figure first.
 
 Use `-Visible -KeepOpen` when you want to watch Visio draw and keep the file open for manual editing.
 
