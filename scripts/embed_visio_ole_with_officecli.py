@@ -3,10 +3,11 @@
 
 The default layout is thesis-friendly:
 
-1. find the figure caption paragraph
-2. insert a centered Visio OLE object paragraph before the caption
-3. remove the static PNG preview paragraph immediately before the OLE object,
-   only when that paragraph actually contains a picture
+1. find the figure caption paragraph from OOXML paragraph order
+2. reuse an existing Visio OLE paragraph before the caption when present
+3. otherwise insert a centered Visio OLE object paragraph before the caption
+4. remove stale static PNG preview paragraphs and duplicate OLE paragraphs
+   from the same figure block
 
 This keeps the Word body as: editable Visio object, then figure caption.
 """
@@ -18,7 +19,36 @@ import json
 import re
 import subprocess
 import struct
+from dataclasses import dataclass
 from pathlib import Path
+from zipfile import ZipFile
+from xml.etree import ElementTree as ET
+
+
+NS = {
+    "o": "urn:schemas-microsoft-com:office:office",
+    "w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main",
+    "w14": "http://schemas.microsoft.com/office/word/2010/wordml",
+}
+
+
+@dataclass(frozen=True)
+class ParagraphInfo:
+    index: int
+    path: str
+    text: str
+    has_picture: bool
+    has_visio_ole: bool
+
+
+@dataclass(frozen=True)
+class EmbedResult:
+    caption: str
+    width: str
+    height: str
+    inserted: bool
+    reused: bool
+    removed_preview_paragraphs: int
 
 
 def run(args: list[str]) -> str:
@@ -46,12 +76,104 @@ def query_paths(officecli: Path, docx: Path, selector: str) -> list[str]:
     return [str(item["path"]) for item in query_results(officecli, docx, selector)]
 
 
-def get_result(officecli: Path, docx: Path, path: str) -> dict | None:
-    payload = run_json([str(officecli), "get", str(docx), path, "--json"])
-    data = payload.get("data") if isinstance(payload, dict) else {}
-    results = data.get("results") if isinstance(data, dict) else []
-    if isinstance(results, list) and results and isinstance(results[0], dict):
-        return results[0]
+def paragraph_path_from_ooxml(index: int, paragraph: ET.Element) -> str:
+    para_id = paragraph.attrib.get(f"{{{NS['w14']}}}paraId")
+    if para_id:
+        return f"/body/p[@paraId={para_id}]"
+    return f"/body/p[{index}]"
+
+
+def document_paragraphs(docx: Path) -> list[ParagraphInfo]:
+    with ZipFile(docx) as archive:
+        document = ET.fromstring(archive.read("word/document.xml"))
+    body = document.find("w:body", NS)
+    if body is None:
+        return []
+
+    paragraphs: list[ParagraphInfo] = []
+    for index, paragraph in enumerate(body.findall("w:p", NS), 1):
+        text = "".join(t.text or "" for t in paragraph.findall(".//w:t", NS))
+        has_visio_ole = any(
+            (ole.attrib.get("ProgID", "").lower().startswith("visio."))
+            for ole in paragraph.findall(".//o:OLEObject", NS)
+        )
+        has_picture = (
+            (paragraph.find(".//w:drawing", NS) is not None or paragraph.find(".//w:pict", NS) is not None)
+            and not has_visio_ole
+        )
+        paragraphs.append(
+            ParagraphInfo(
+                index=index,
+                path=paragraph_path_from_ooxml(index, paragraph),
+                text=text,
+                has_picture=has_picture,
+                has_visio_ole=has_visio_ole,
+            )
+        )
+    return paragraphs
+
+
+def find_caption_paragraph(docx: Path, caption: str) -> ParagraphInfo | None:
+    for paragraph in document_paragraphs(docx):
+        if caption in paragraph.text:
+            return paragraph
+    return None
+
+
+def nearby_figure_block_before_caption(docx: Path, caption: str, max_scan: int = 4) -> tuple[ParagraphInfo, list[ParagraphInfo]]:
+    paragraphs = document_paragraphs(docx)
+    caption_para = next((paragraph for paragraph in paragraphs if caption in paragraph.text), None)
+    if caption_para is None:
+        raise RuntimeError(f"caption paragraph not found in DOCX: {caption}")
+
+    candidates: list[ParagraphInfo] = []
+    cursor = caption_para.index - 2
+    scanned = 0
+    while cursor >= 0 and scanned < max_scan:
+        paragraph = paragraphs[cursor]
+        if paragraph.text.strip():
+            break
+        if paragraph.has_picture or paragraph.has_visio_ole:
+            candidates.append(paragraph)
+            cursor -= 1
+            scanned += 1
+            continue
+        if candidates:
+            break
+        cursor -= 1
+        scanned += 1
+
+    candidates.reverse()
+    return caption_para, candidates
+
+
+def cleanup_duplicate_previews_before_caption(officecli: Path, docx: Path, caption: str) -> int:
+    """Keep one Visio OLE paragraph before a figure caption and remove static leftovers."""
+    _caption_para, candidates = nearby_figure_block_before_caption(docx, caption)
+    if not candidates:
+        return 0
+
+    keep_ole_path: str | None = None
+    for paragraph in reversed(candidates):
+        if paragraph.has_visio_ole:
+            keep_ole_path = paragraph.path
+            break
+
+    removals = [
+        paragraph.path
+        for paragraph in candidates
+        if paragraph.has_picture or (paragraph.has_visio_ole and paragraph.path != keep_ole_path)
+    ]
+    for path in reversed(removals):
+        run([str(officecli), "remove", str(docx), path])
+    return len(removals)
+
+
+def existing_ole_before_caption(docx: Path, caption: str) -> ParagraphInfo | None:
+    _caption_para, candidates = nearby_figure_block_before_caption(docx, caption)
+    for paragraph in reversed(candidates):
+        if paragraph.has_visio_ole:
+            return paragraph
     return None
 
 
@@ -69,21 +191,9 @@ def resolve_officecli(explicit: str | None) -> Path:
     return Path("officecli")
 
 
-def numeric_body_paragraph_index(path: str) -> int | None:
-    match = re.fullmatch(r"/body/p\[(\d+)\]", path)
-    return int(match.group(1)) if match else None
-
-
 def parent_paragraph_from_child(path: str) -> str | None:
-    match = re.search(r"(/body/p\[[^\]]+\])(?:/|$)", path)
+    match = re.search(r"(/body/p(?:\[[^\]]+\]|\[@paraId=[^\]]+\]))(?:/|$)", path)
     return match.group(1) if match else None
-
-
-def has_picture_child(result: dict | None) -> bool:
-    if not isinstance(result, dict):
-        return False
-    children = result.get("children") or []
-    return any(isinstance(child, dict) and child.get("type") == "picture" for child in children)
 
 
 def parse_cm(value: str) -> float:
@@ -181,32 +291,33 @@ def embed_one(
     height: str,
     prog_id: str,
     remove_preview: bool,
-) -> None:
-    matches = query_paths(officecli, docx, f'paragraph:contains("{caption}")')
-    if not matches:
+) -> EmbedResult:
+    caption_para = find_caption_paragraph(docx, caption)
+    if caption_para is None:
         raise RuntimeError(f"caption paragraph not found in DOCX: {caption}")
-    caption_path = matches[0]
+    caption_path = caption_para.path
 
-    for ole_path in reversed(query_paths(officecli, docx, "ole")):
-        parent = parent_paragraph_from_child(ole_path)
-        if parent == caption_path:
-            run([str(officecli), "remove", str(docx), ole_path])
+    existing_ole = existing_ole_before_caption(docx, caption)
+    if existing_ole is not None:
+        removed = 0
+        if remove_preview:
+            removed = cleanup_duplicate_previews_before_caption(officecli, docx, caption)
+        existing_ole = existing_ole_before_caption(docx, caption)
+        if existing_ole is not None:
+            run([str(officecli), "set", str(docx), existing_ole.path, "--prop", "align=center"])
+        return EmbedResult(caption, width, height, inserted=False, reused=True, removed_preview_paragraphs=removed)
 
-    caption_index = numeric_body_paragraph_index(caption_path)
-    preview_path = f"/body/p[{caption_index - 1}]" if caption_index and caption_index > 1 else None
-    ole_paragraph = add_ole_before_caption(officecli, docx, caption_path, vsdx, preview, width, height, prog_id)
+    add_ole_before_caption(officecli, docx, caption_path, vsdx, preview, width, height, prog_id)
 
-    if remove_preview and preview_path:
-        previous = get_result(officecli, docx, preview_path)
-        if has_picture_child(previous):
-            run([str(officecli), "remove", str(docx), preview_path])
-        else:
+    removed = 0
+    if remove_preview:
+        removed = cleanup_duplicate_previews_before_caption(officecli, docx, caption)
+        if removed == 0:
             print(json.dumps({
-                "warning": "preview paragraph not removed because it does not contain a picture",
+                "warning": "no static preview paragraph was removed near caption",
                 "caption": caption,
-                "expected_preview_path": preview_path,
-                "inserted_ole_paragraph": ole_paragraph,
             }, ensure_ascii=False))
+    return EmbedResult(caption, width, height, inserted=True, reused=False, removed_preview_paragraphs=removed)
 
 
 def main() -> int:
@@ -227,8 +338,7 @@ def main() -> int:
     if not isinstance(mappings, list):
         raise ValueError("figure map must be a JSON list")
 
-    embedded = 0
-    embedded_items: list[dict[str, str]] = []
+    results: list[EmbedResult] = []
     for item in mappings:
         if not isinstance(item, dict):
             raise ValueError("figure map items must be objects")
@@ -243,16 +353,26 @@ def main() -> int:
             raise FileNotFoundError(preview)
         if args.fit_preview_aspect:
             width, height = fit_size_from_preview(preview, args.max_width, args.max_height)
-        embed_one(officecli, docx, caption, vsdx, preview, width, height, args.prog_id, not args.keep_static_previews)
-        embedded += 1
-        embedded_items.append({"caption": caption, "width": width, "height": height})
+        result = embed_one(officecli, docx, caption, vsdx, preview, width, height, args.prog_id, not args.keep_static_previews)
+        results.append(result)
 
     # OfficeCLI may leave a resident document process alive for speed. Flush and
     # close it so independent ZIP/OpenXML validators read the updated DOCX from disk.
     subprocess.run([str(officecli), "save", str(docx)], check=False, capture_output=True, text=True, encoding="utf-8", errors="replace")
     subprocess.run([str(officecli), "close", str(docx)], check=False, capture_output=True, text=True, encoding="utf-8", errors="replace")
 
-    print(json.dumps({"docx": str(docx), "embedded_visio_ole": embedded, "items": embedded_items}, ensure_ascii=False, indent=2))
+    inserted = sum(1 for item in results if item.inserted)
+    reused = sum(1 for item in results if item.reused)
+    removed = sum(item.removed_preview_paragraphs for item in results)
+    print(json.dumps({
+        "docx": str(docx),
+        "processed_figures": len(results),
+        "inserted_visio_ole": inserted,
+        "reused_visio_ole": reused,
+        "removed_static_preview_paragraphs": removed,
+        "embedded_visio_ole": len(results),
+        "items": [result.__dict__ for result in results],
+    }, ensure_ascii=False, indent=2))
     return 0
 
 
