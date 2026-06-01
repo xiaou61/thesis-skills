@@ -5,6 +5,8 @@ param(
   [int]$ExpectedVisioOle = 0,
   [int]$MinLevel2 = 1,
   [int]$MinLevel3 = 0,
+  [int]$MinContentUnits = 0,
+  [int]$MinCjkChars = 0,
   [switch]$RequireContinuationCaption,
   [switch]$SkipFigureAspectCheck
 )
@@ -50,6 +52,19 @@ Invoke-Gate 'table continuations' {
 
 Invoke-Gate 'heading levels' {
   python (Join-Path $scriptDir 'check_docx_heading_levels.py') $docxPath --min-level2 $MinLevel2 --min-level3 $MinLevel3
+}
+
+if ($MinContentUnits -gt 0 -or $MinCjkChars -gt 0) {
+  Invoke-Gate 'thesis content quality' {
+    $qualityArgs = @($docxPath)
+    if ($MinContentUnits -gt 0) {
+      $qualityArgs += @('--min-content-units', $MinContentUnits)
+    }
+    if ($MinCjkChars -gt 0) {
+      $qualityArgs += @('--min-cjk-chars', $MinCjkChars)
+    }
+    python (Join-Path $scriptDir 'check_docx_thesis_quality.py') @qualityArgs
+  }
 }
 
 if ($ExpectedVisioOle -gt 0) {

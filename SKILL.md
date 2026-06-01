@@ -31,8 +31,8 @@ NO FINAL DOCX COMPLETION CLAIM WITHOUT FRESH AGGREGATE-GATE EVIDENCE
 
 Before saying a thesis `.docx` is complete, acceptable, fixed, or ready:
 
-1. Identify the final `.docx`, figure map, expected Visio OLE count, and heading minimums.
-2. Run `scripts/check_final_thesis_docx.ps1` on the current file, not a previous draft.
+1. Identify the final `.docx`, figure map, expected Visio OLE count, heading minimums, and required thesis length.
+2. Run `scripts/check_final_thesis_docx.ps1` on the current file, not a previous draft. For normal undergraduate system theses, use `-MinContentUnits 12000 -MinCjkChars 10000` unless the school template says otherwise.
 3. Read the output and exit code.
 4. If any gate fails, repair the document or report the exact failed gate. Do not call it done.
 5. Only after the aggregate gate passes, report the verification evidence.
@@ -74,7 +74,7 @@ For a project/repo/system source, run this route:
    When producing the final `.docx`, embed structural `.vsdx` figures as Visio OLE objects when OfficeCLI or Word automation is available; the `.png` export is only the preview thumbnail. Check exported preview aspect ratios before embedding, and use aspect-fit OLE sizing instead of a universal fixed rectangle.
 9. Run final checks:
    `scripts/check_thesis_workspace.py <workspace>`
-   If a final `.docx` is produced, also run `scripts/check_final_thesis_docx.ps1 <paper.docx> -FigureMap <visio-ole-figure-map.json> -ExpectedVisioOle <count> -RequireContinuationCaption`; do not mark the document complete if this aggregate gate fails.
+   If a final `.docx` is produced, also run `scripts/check_final_thesis_docx.ps1 <paper.docx> -FigureMap <visio-ole-figure-map.json> -ExpectedVisioOle <count> -MinContentUnits 12000 -MinCjkChars 10000 -RequireContinuationCaption`; do not mark the document complete if this aggregate gate fails.
 
 Read `references/thesis-module-workflow.md` when planning or executing the full route.
 
@@ -123,6 +123,7 @@ For Word delivery, a PNG inserted into the body is only a preview image. A figur
 - A three-line table means only top border, header-bottom border, and bottom border. No vertical borders, no internal grid lines, and no Word `Table Grid` styling. Verify final DOCX tables with `scripts/check_docx_three_line_tables.py` when a `.docx` is produced.
 - Cross-page tables must not be left to Word defaults. Mark the header row as repeated, disable row splitting across pages, and when continuation captions are required, add visible `续表 x.x` / `表 x.x（续）` captions. Verify with `scripts/check_docx_table_continuations.ps1`; do not rely on visual inspection alone.
 - A final thesis `.docx` must pass the aggregate gate `scripts/check_final_thesis_docx.ps1`, which includes three-line table borders, continuation-table pagination, heading levels, Visio OLE embedding, duplicate-preview detection, and figure aspect checks. If the aggregate gate fails, fix the document or report it as blocked.
+- A normal undergraduate system-design thesis should be about 12000 Chinese-content units unless the school gives another target. Verify with `scripts/check_docx_thesis_quality.py` or the aggregate gate options `-MinContentUnits 12000 -MinCjkChars 10000`; do not deliver a 4000-word demo as if it were thesis-length.
 - If a final `.docx` changes after a successful gate run, the gate evidence is stale. Run `scripts/check_final_thesis_docx.ps1` again before any completion claim.
 - For final `.docx` delivery, do not represent structural Visio diagrams only as static PNGs unless OLE embedding is impossible and explicitly reported. Prefer `scripts/embed_visio_ole_with_officecli.py --fit-preview-aspect`, then verify with `scripts/check_docx_visio_ole.py` and `scripts/check_docx_duplicate_figure_previews.py`.
 - Do not force every Visio OLE object into one fixed display size such as `14cm x 8cm`. Preserve the preview aspect ratio. If `scripts/check_figure_preview_aspects.py` reports an extreme flat/tall figure, re-layout or split the source diagram before final delivery.

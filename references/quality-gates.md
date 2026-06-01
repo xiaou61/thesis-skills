@@ -6,7 +6,7 @@ Use this before saying program-to-thesis work is complete.
 
 For final Word delivery, do not rely on a mental checklist. Use an executable gate:
 
-1. Identify the current `.docx`, the figure map, expected Visio OLE count, and heading thresholds.
+1. Identify the current `.docx`, the figure map, expected Visio OLE count, heading thresholds, and required thesis length.
 2. Run `scripts/check_final_thesis_docx.ps1` against the current `.docx`.
 3. Read the exit code and output.
 4. If it fails, fix the failed gate and run it again.
@@ -38,6 +38,7 @@ For final Word delivery, do not rely on a mental checklist. Use an executable ga
 - database/data-object tables use a real three-line table format or a school-provided table style.
 - final `.docx` tables are not Word `Table Grid` tables unless the school template explicitly requires it.
 - final `.docx` cross-page tables repeat header rows, prevent row splitting across pages, and include visible continuation captions when required; verify with `scripts/check_docx_table_continuations.ps1`.
+- final `.docx` meets the required thesis length and chapter density; for normal system-design undergraduate theses, verify about 12000 content units with `scripts/check_docx_thesis_quality.py`.
 - Chapter 5 program screenshots are real implementation screenshots, or are explicitly registered as `needs_user_screenshot`; synthetic screenshots are not allowed.
 - Chapter 6 test screenshots/logs/reports are used only when real test evidence exists.
 - every figure/table is mentioned in the text.
@@ -69,7 +70,8 @@ python -m py_compile .\scripts\build_project_evidence.py
 python .\scripts\check_docx_three_line_tables.py .\path\to\final-paper.docx
 .\scripts\check_docx_table_continuations.ps1 .\path\to\final-paper.docx -RequireContinuationCaption
 python .\scripts\check_docx_visio_ole.py .\path\to\final-paper.docx --min-visio-ole <expected-count>
-.\scripts\check_final_thesis_docx.ps1 .\path\to\final-paper.docx -FigureMap .\path\to\visio-ole-figure-map.json -ExpectedVisioOle <expected-count> -RequireContinuationCaption
+python .\scripts\check_docx_thesis_quality.py .\path\to\final-paper.docx --min-content-units 12000 --min-cjk-chars 10000
+.\scripts\check_final_thesis_docx.ps1 .\path\to\final-paper.docx -FigureMap .\path\to\visio-ole-figure-map.json -ExpectedVisioOle <expected-count> -MinContentUnits 12000 -MinCjkChars 10000 -RequireContinuationCaption
 ```
 
 ## Red Flags

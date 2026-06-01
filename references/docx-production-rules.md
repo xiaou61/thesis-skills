@@ -85,6 +85,8 @@ For final delivery, prefer the aggregate gate so table, heading, Visio, duplicat
   -ExpectedVisioOle 16 `
   -MinLevel2 20 `
   -MinLevel3 4 `
+  -MinContentUnits 12000 `
+  -MinCjkChars 10000 `
   -RequireContinuationCaption
 ```
 
