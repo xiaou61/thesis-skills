@@ -21,6 +21,31 @@ Always work from evidence:
 
 Do not start from free prose unless the user explicitly asks for a rough draft and accepts missing evidence risk.
 
+## Non-Negotiable Completion Gate
+
+This skill uses a Superpowers-style gate structure: rules are not reminders; they are executable stop conditions.
+
+```text
+NO FINAL DOCX COMPLETION CLAIM WITHOUT FRESH AGGREGATE-GATE EVIDENCE
+```
+
+Before saying a thesis `.docx` is complete, acceptable, fixed, or ready:
+
+1. Identify the final `.docx`, figure map, expected Visio OLE count, and heading minimums.
+2. Run `scripts/check_final_thesis_docx.ps1` on the current file, not a previous draft.
+3. Read the output and exit code.
+4. If any gate fails, repair the document or report the exact failed gate. Do not call it done.
+5. Only after the aggregate gate passes, report the verification evidence.
+
+Red flags that mean stop and run the gate:
+
+- "The table rules are already in the skill."
+- "The document looks fine in Word."
+- "Three-line tables passed, so continuation is probably fine."
+- "The previous demo passed."
+- "Only a small edit was made."
+- "Visio/OLE is unrelated to this table change."
+
 ## Mainline: Program To Thesis
 
 For a project/repo/system source, run this route:
@@ -49,6 +74,7 @@ For a project/repo/system source, run this route:
    When producing the final `.docx`, embed structural `.vsdx` figures as Visio OLE objects when OfficeCLI or Word automation is available; the `.png` export is only the preview thumbnail. Check exported preview aspect ratios before embedding, and use aspect-fit OLE sizing instead of a universal fixed rectangle.
 9. Run final checks:
    `scripts/check_thesis_workspace.py <workspace>`
+   If a final `.docx` is produced, also run `scripts/check_final_thesis_docx.ps1 <paper.docx> -FigureMap <visio-ole-figure-map.json> -ExpectedVisioOle <count> -RequireContinuationCaption`; do not mark the document complete if this aggregate gate fails.
 
 Read `references/thesis-module-workflow.md` when planning or executing the full route.
 
@@ -79,8 +105,8 @@ Chapters 1-3 are the main citation area. Do not force citations into implementat
   Run `build_chapter4_database_assets.py`, then render the overview and single-entity E-R JSON with the ER Visio route.
 - Flowchart: `references/visio-flowchart-workflow.md`
   Run `layout_flowchart_diagram.py`, `check_flowchart_layout.py`, `generate_visio_flowchart_diagram.ps1`.
-- Three-line tables: read `references/docx-production-rules.md`, then use `scripts/create_three_line_table.py`.
-  A Word `Table Grid` table is not a three-line table.
+- Three-line and continuation tables: read `references/docx-production-rules.md`, then use `scripts/create_three_line_table.py`.
+  A Word `Table Grid` table is not a three-line table. For final DOCX output, run `scripts/check_docx_table_continuations.ps1`; if tables cross pages, require repeated header rows, disabled row splitting, and visible continuation captions when the school/template or user expects them.
 
 Keep editable sources: `.vsdx` for Visio figures and script/Word source for final tables.
 For Word delivery, a PNG inserted into the body is only a preview image. A figure should not be called "Word-editable Visio" unless the `.docx` contains a Visio OLE object, verified with `scripts/check_docx_visio_ole.py`.
@@ -95,6 +121,9 @@ For Word delivery, a PNG inserted into the body is only a preview image. A figur
 - Do not under-plan figures for a normal system thesis. If fewer than 8 figures are planned across Chapters 3-6, explain the small scope or missing evidence.
 - Never fabricate Chapter 5 program screenshots. Chapter 5 is the implementation chapter and should contain real running-program screenshots for implemented functions. If the app cannot be run or screenshots are not provided, create `needs_user_screenshot` entries in `figure-registry.yaml` and list them as evidence gaps.
 - A three-line table means only top border, header-bottom border, and bottom border. No vertical borders, no internal grid lines, and no Word `Table Grid` styling. Verify final DOCX tables with `scripts/check_docx_three_line_tables.py` when a `.docx` is produced.
+- Cross-page tables must not be left to Word defaults. Mark the header row as repeated, disable row splitting across pages, and when continuation captions are required, add visible `续表 x.x` / `表 x.x（续）` captions. Verify with `scripts/check_docx_table_continuations.ps1`; do not rely on visual inspection alone.
+- A final thesis `.docx` must pass the aggregate gate `scripts/check_final_thesis_docx.ps1`, which includes three-line table borders, continuation-table pagination, heading levels, Visio OLE embedding, duplicate-preview detection, and figure aspect checks. If the aggregate gate fails, fix the document or report it as blocked.
+- If a final `.docx` changes after a successful gate run, the gate evidence is stale. Run `scripts/check_final_thesis_docx.ps1` again before any completion claim.
 - For final `.docx` delivery, do not represent structural Visio diagrams only as static PNGs unless OLE embedding is impossible and explicitly reported. Prefer `scripts/embed_visio_ole_with_officecli.py --fit-preview-aspect`, then verify with `scripts/check_docx_visio_ole.py` and `scripts/check_docx_duplicate_figure_previews.py`.
 - Do not force every Visio OLE object into one fixed display size such as `14cm x 8cm`. Preserve the preview aspect ratio. If `scripts/check_figure_preview_aspects.py` reports an extreme flat/tall figure, re-layout or split the source diagram before final delivery.
 - For generated flowchart `.vsdx` figures, do not rely on Visio automatic routing alone. Run `layout_flowchart_diagram.py` so each edge receives orthogonal route points, then run `check_flowchart_layout.py` and require `connectorCrossings: 0` before rendering or embedding the figure.

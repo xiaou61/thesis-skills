@@ -50,6 +50,14 @@ When generating `.docx` with `python-docx`, explicitly remove table-level border
 
 ```powershell
 python .\scripts\check_docx_three_line_tables.py .\paper.docx
+.\scripts\check_docx_table_continuations.ps1 .\paper.docx -RequireContinuationCaption
+```
+
+For cross-page thesis tables, do not rely on Word defaults. Mark the first row with `w:tblHeader`, add `w:cantSplit` to rows so a row is not split across pages, and add a visible continuation caption such as `续表 4.2` when the school/template/user expects continuation captions. If a produced DOCX fails the continuation check, use:
+
+```powershell
+.\scripts\apply_table_continuations.ps1 .\paper.docx -RequireContinuationCaption
+.\scripts\check_docx_table_continuations.ps1 .\paper.docx -RequireContinuationCaption
 ```
 
 ### Editable Visio Figures In Word
@@ -66,6 +74,19 @@ python .\scripts\embed_visio_ole_with_officecli.py .\paper.docx --figure-map .\p
 python .\scripts\check_docx_visio_ole.py .\paper.docx --min-visio-ole 8 --require-before-caption
 python .\scripts\check_docx_duplicate_figure_previews.py .\paper.docx --figure-map .\paper-context\visio-ole-figure-map.json
 ```
+
+For final delivery, prefer the aggregate gate so table, heading, Visio, duplicate-preview, and aspect checks are not skipped:
+
+```powershell
+.\scripts\check_final_thesis_docx.ps1 .\paper.docx `
+  -FigureMap .\paper-context\visio-ole-figure-map.json `
+  -ExpectedVisioOle 16 `
+  -MinLevel2 20 `
+  -MinLevel3 4 `
+  -RequireContinuationCaption
+```
+
+This gate follows the same discipline as process skills such as Superpowers: if the `.docx` changes after a pass, the pass is stale. Re-run the aggregate gate on the current file before claiming completion.
 
 Do not embed every OLE object with the same universal `14cm x 8cm` display size. That distorts tall flowcharts and flat architecture diagrams. Fit the OLE display size from the PNG preview aspect ratio, then inspect warnings from `check_figure_preview_aspects.py`. Extreme warnings mean the source diagram layout should be split or redesigned instead of stretched inside Word.
 
@@ -91,9 +112,11 @@ Pandoc can produce a quick `.docx` from Markdown, but that raw output is not a t
 
 ```powershell
 python .\scripts\check_docx_three_line_tables.py .\paper.docx
+.\scripts\check_docx_table_continuations.ps1 .\paper.docx -RequireContinuationCaption
 python .\scripts\check_docx_visio_ole.py .\paper.docx --min-visio-ole 8 --require-before-caption
 python .\scripts\check_docx_duplicate_figure_previews.py .\paper.docx --figure-map .\paper-context\visio-ole-figure-map.json
 python .\scripts\check_figure_preview_aspects.py .\paper-context\visio-ole-figure-map.json
+.\scripts\check_final_thesis_docx.ps1 .\paper.docx -FigureMap .\paper-context\visio-ole-figure-map.json -ExpectedVisioOle 8 -RequireContinuationCaption
 ```
 
 If the Markdown-derived DOCX only contains static images, re-embed Visio OLE objects with OfficeCLI and re-run the checks. If OLE embedding leaves both the editable Visio object and the original static image before a caption, run the embedding script again with the same figure map and verify `check_docx_duplicate_figure_previews.py` reports zero errors. If tables fail the three-line check or the document fails OpenXML validation, use the controlled Word-generation path instead of shipping the Markdown conversion.
@@ -117,8 +140,10 @@ Do not claim a `.docx` task is done when:
 - the input is not a readable OOXML `.docx`
 - template alignment was claimed but no template profile exists
 - tables were called three-line tables but still use `Table Grid`, vertical borders, or internal grid lines
+- cross-page tables do not repeat the header row, allow rows to split across pages, or lack a required visible continuation caption
 - generated Visio figures are only static PNGs in the final `.docx` and the lack of OLE embedding was not explicitly reported
 - generated Visio figure blocks contain both a Visio OLE object and the old static PNG preview before the same caption
 - OLE figures were embedded with a fixed size that visibly stretches the preview instead of preserving the source aspect ratio
 - `check_figure_preview_aspects.py` reports extreme flat/tall figure warnings and no split/re-layout decision is documented
+- `check_final_thesis_docx.ps1` has not been run freshly after the most recent `.docx` change
 - remaining major findings were hidden
