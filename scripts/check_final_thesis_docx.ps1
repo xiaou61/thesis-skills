@@ -67,6 +67,10 @@ if ($MinContentUnits -gt 0 -or $MinCjkChars -gt 0) {
   }
 }
 
+Invoke-Gate 'thesis voice' {
+  python (Join-Path $scriptDir 'check_docx_thesis_voice.py') $docxPath
+}
+
 if ($ExpectedVisioOle -gt 0) {
   Invoke-Gate 'Visio OLE objects' {
     python (Join-Path $scriptDir 'check_docx_visio_ole.py') $docxPath --min-visio-ole $ExpectedVisioOle --require-before-caption

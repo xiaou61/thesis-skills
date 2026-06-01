@@ -77,7 +77,7 @@ python .\scripts\check_docx_visio_ole.py .\paper.docx --min-visio-ole 8 --requir
 python .\scripts\check_docx_duplicate_figure_previews.py .\paper.docx --figure-map .\paper-context\visio-ole-figure-map.json
 ```
 
-For final delivery, prefer the aggregate gate so table, heading, Visio, duplicate-preview, and aspect checks are not skipped:
+For final delivery, prefer the aggregate gate so table, heading, thesis-voice, Visio, duplicate-preview, length, and aspect checks are not skipped:
 
 ```powershell
 .\scripts\check_final_thesis_docx.ps1 .\paper.docx `
