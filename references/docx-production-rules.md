@@ -60,6 +60,8 @@ For cross-page thesis tables, do not rely on Word defaults. Mark the first row w
 .\scripts\check_docx_table_continuations.ps1 .\paper.docx -RequireContinuationCaption
 ```
 
+Do not pre-split long three-line tables into very small artificial chunks just to avoid pagination. Generate a normal complete table first, then use the Word pagination gate to decide whether page breaks or real continuation captions are needed. Avoid applying paragraph-level `keep_with_next` or `keep_together` inside every table cell; Word displays those paragraph properties as black square formatting markers when "show formatting marks" is enabled, which makes the table look broken even when borders are correct.
+
 ### Editable Visio Figures In Word
 
 For structural thesis figures generated as `.vsdx`, the final `.docx` should contain a Visio OLE object, not only a static PNG. The PNG export is a preview thumbnail for the OLE object and may also be used in PDF export, but it is not the editable source.
