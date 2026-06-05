@@ -277,7 +277,14 @@ def add_ole_before_caption(
         paragraph = parent_paragraph_from_child(matches[-1])
     if not paragraph:
         raise RuntimeError(f"could not identify inserted OLE paragraph from OfficeCLI output: {output}")
-    run([str(officecli), "set", str(docx), paragraph, "--prop", "align=center"])
+    try:
+        run([str(officecli), "set", str(docx), paragraph, "--prop", "align=center"])
+    except subprocess.CalledProcessError as exc:
+        print(json.dumps({
+            "warning": "OfficeCLI could not center inserted OLE paragraph",
+            "paragraph": paragraph,
+            "returncode": exc.returncode,
+        }, ensure_ascii=False))
     return paragraph
 
 
@@ -304,7 +311,14 @@ def embed_one(
             removed = cleanup_duplicate_previews_before_caption(officecli, docx, caption)
         existing_ole = existing_ole_before_caption(docx, caption)
         if existing_ole is not None:
-            run([str(officecli), "set", str(docx), existing_ole.path, "--prop", "align=center"])
+            try:
+                run([str(officecli), "set", str(docx), existing_ole.path, "--prop", "align=center"])
+            except subprocess.CalledProcessError as exc:
+                print(json.dumps({
+                    "warning": "OfficeCLI could not center existing OLE paragraph",
+                    "paragraph": existing_ole.path,
+                    "returncode": exc.returncode,
+                }, ensure_ascii=False))
         return EmbedResult(caption, width, height, inserted=False, reused=True, removed_preview_paragraphs=removed)
 
     add_ole_before_caption(officecli, docx, caption_path, vsdx, preview, width, height, prog_id)
