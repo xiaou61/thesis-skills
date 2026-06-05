@@ -35,6 +35,7 @@ Outputs:
 paper-context/template-extract/
   template-profile.json
   template-profile.md
+  thesis-structure-plan.yaml
   template-rule-overrides.yaml
 ```
 
@@ -56,6 +57,7 @@ Map the extracted profile into:
 
 - `thesis-ai-standard/templates/standard-profile.yaml`
 - `paper-context/template-extract/template-rule-overrides.yaml`
+- `paper-context/template-extract/thesis-structure-plan.yaml`
 
 Use extracted facts for:
 
@@ -69,6 +71,15 @@ Use extracted facts for:
 
 Do not auto-claim school rules that are not explicit in the template. Mark uncertain items as manual-review.
 
+Build the component plan:
+
+```powershell
+python .\scripts\build_thesis_structure_plan.py `
+  --template-profile .\paper-context\template-extract\template-profile.json `
+  --spec .\thesis-ai-standard\templates\thesis-ai-spec.yaml `
+  --out .\paper-context\template-extract\thesis-structure-plan.yaml
+```
+
 ## Step 3: Reuse The Template Safely
 
 If the thesis will be generated from markdown or intermediate text:
@@ -76,6 +87,22 @@ If the thesis will be generated from markdown or intermediate text:
 - use the school template as a `pandoc --reference-doc`
 - keep final formatting-sensitive work in `.docx`
 - avoid markdown round-trips after the document has stable TOC/cross-references/figure anchors
+
+## Step 4: Verify Template Replication
+
+For final DOCX delivery, run:
+
+```powershell
+.\scripts\check_final_thesis_docx.ps1 .\final.docx `
+  -TemplateProfile .\paper-context\template-extract\template-profile.json `
+  -FigureMap .\paper-context\visio-ole-figure-map.json `
+  -ExpectedVisioOle <count> `
+  -MinContentUnits 12000 `
+  -MinCjkChars 10000 `
+  -RequireContinuationCaption
+```
+
+This invokes the template style, page model, and replication-diff checks in addition to the normal final gates.
 
 ## Stop Conditions
 
@@ -86,3 +113,5 @@ Do not claim extraction is complete when:
 - style names were extracted but not mapped to chapter/body roles
 - margins or page size are missing from the report
 - the template contains heavy manual formatting with weak style usage and no manual-review note was added
+- `thesis-structure-plan.yaml` was not built for a template-driven run
+- template replication checks were skipped for a final delivery claim

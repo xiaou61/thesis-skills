@@ -6,7 +6,7 @@ Use this before saying program-to-thesis work is complete.
 
 For final Word delivery, do not rely on a mental checklist. Use an executable gate:
 
-1. Identify the current `.docx`, the figure map, expected Visio OLE count, heading thresholds, and required thesis length.
+1. Identify the current `.docx`, the figure map, expected Visio OLE count, heading thresholds, required thesis length, and template profile when one exists.
 2. Run `scripts/check_final_thesis_docx.ps1` against the current `.docx`.
 3. Read the exit code and output.
 4. If it fails, fix the failed gate and run it again.
@@ -17,6 +17,7 @@ For final Word delivery, do not rely on a mental checklist. Use an executable ga
 - `standard-profile.yaml` exists.
 - school/advisor rules are explicit or marked missing.
 - template extraction outputs exist if a school `.docx` template was used.
+- `template-profile.json` and `thesis-structure-plan.yaml` exist if a school `.docx` template was used.
 
 ## Gate 2: Project Evidence
 
@@ -43,6 +44,8 @@ For final Word delivery, do not rely on a mental checklist. Use an executable ga
 - Chapter 5 program screenshots are real implementation screenshots, or are explicitly registered as `needs_user_screenshot`; synthetic screenshots are not allowed.
 - Chapter 6 test screenshots/logs/reports are used only when real test evidence exists.
 - every figure/table is mentioned in the text.
+- figure/table captions are numbered continuously and close to their real Word object.
+- body mentions of figures/tables resolve to real captions.
 
 ## Gate 4: Chapter Structure
 
@@ -59,8 +62,19 @@ For final Word delivery, do not rely on a mental checklist. Use an executable ga
 - no fabricated functions, APIs, fields, tests, screenshots, references, DOI values, or school rules.
 - no AI workflow language appears in thesis body text.
 - missing evidence is reported instead of hidden.
+- no unresolved Word comments, tracked changes, hidden body text, or broken OOXML relationships remain.
+- body numeric citations and numbered reference entries are structurally closed.
 
-## Gate 6: Script Validation
+## Gate 6: Template Replication
+
+When a template profile exists:
+
+- final `.docx` component order matches the template/profile or differences are reported.
+- final `.docx` uses template-known paragraph styles at an acceptable ratio or differences are reported.
+- page margins, orientation, and section model match the profile or differences are reported.
+- `template-replication-diff.md` is generated and reviewed.
+
+## Gate 7: Script Validation
 
 Run applicable checks:
 
@@ -70,10 +84,17 @@ python .\scripts\build_figure_plan.py .\thesis-ai-standard\templates\thesis-ai-s
 python -m py_compile .\scripts\build_project_evidence.py
 python .\scripts\check_docx_three_line_tables.py .\path\to\final-paper.docx
 .\scripts\check_docx_table_continuations.ps1 .\path\to\final-paper.docx -RequireContinuationCaption
+python .\scripts\check_docx_structural_hygiene.py .\path\to\final-paper.docx
+python .\scripts\check_docx_components.py .\path\to\final-paper.docx
+python .\scripts\check_docx_citation_closure.py .\path\to\final-paper.docx
+python .\scripts\check_docx_caption_closure.py .\path\to\final-paper.docx
 python .\scripts\check_docx_visio_ole.py .\path\to\final-paper.docx --min-visio-ole <expected-count>
 python .\scripts\check_docx_thesis_quality.py .\path\to\final-paper.docx --min-content-units 12000 --min-cjk-chars 10000
 python .\scripts\check_docx_thesis_voice.py .\path\to\final-paper.docx
-.\scripts\check_final_thesis_docx.ps1 .\path\to\final-paper.docx -FigureMap .\path\to\visio-ole-figure-map.json -ExpectedVisioOle <expected-count> -MinContentUnits 12000 -MinCjkChars 10000 -RequireContinuationCaption
+python .\scripts\check_docx_style_profile.py .\path\to\final-paper.docx --template-profile .\paper-context\template-extract\template-profile.json
+python .\scripts\check_docx_page_model.py .\path\to\final-paper.docx --template-profile .\paper-context\template-extract\template-profile.json
+python .\scripts\report_template_replication_diff.py .\path\to\final-paper.docx --template-profile .\paper-context\template-extract\template-profile.json
+.\scripts\check_final_thesis_docx.ps1 .\path\to\final-paper.docx -TemplateProfile .\paper-context\template-extract\template-profile.json -FigureMap .\path\to\visio-ole-figure-map.json -ExpectedVisioOle <expected-count> -MinContentUnits 12000 -MinCjkChars 10000 -RequireContinuationCaption
 ```
 
 ## Red Flags

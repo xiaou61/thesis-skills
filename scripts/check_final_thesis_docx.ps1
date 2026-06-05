@@ -7,11 +7,21 @@ param(
   [int]$MinLevel3 = 0,
   [int]$MinContentUnits = 0,
   [int]$MinCjkChars = 0,
+  [string]$TemplateProfile,
   [switch]$RequireContinuationCaption,
-  [switch]$SkipFigureAspectCheck
+  [switch]$SkipFigureAspectCheck,
+  [switch]$SkipHardGateChecks,
+  [switch]$SkipTemplateReplicationChecks
 )
 
 $ErrorActionPreference = 'Stop'
+$utf8 = [System.Text.UTF8Encoding]::new()
+$OutputEncoding = $utf8
+try {
+  [Console]::OutputEncoding = $utf8
+}
+catch {
+}
 
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $docxPath = (Resolve-Path -LiteralPath $Docx).Path
@@ -54,6 +64,24 @@ Invoke-Gate 'heading levels' {
   python (Join-Path $scriptDir 'check_docx_heading_levels.py') $docxPath --min-level2 $MinLevel2 --min-level3 $MinLevel3
 }
 
+if (-not $SkipHardGateChecks) {
+  Invoke-Gate 'DOCX structural hygiene' {
+    python (Join-Path $scriptDir 'check_docx_structural_hygiene.py') $docxPath
+  }
+
+  Invoke-Gate 'document components' {
+    python (Join-Path $scriptDir 'check_docx_components.py') $docxPath
+  }
+
+  Invoke-Gate 'citation closure' {
+    python (Join-Path $scriptDir 'check_docx_citation_closure.py') $docxPath
+  }
+
+  Invoke-Gate 'caption closure' {
+    python (Join-Path $scriptDir 'check_docx_caption_closure.py') $docxPath
+  }
+}
+
 if ($MinContentUnits -gt 0 -or $MinCjkChars -gt 0) {
   Invoke-Gate 'thesis content quality' {
     $qualityArgs = @($docxPath)
@@ -86,6 +114,20 @@ if (-not [string]::IsNullOrWhiteSpace($FigureMap)) {
     Invoke-Gate 'figure preview aspects' {
       python (Join-Path $scriptDir 'check_figure_preview_aspects.py') $figureMapPath --fail-on-warning
     }
+  }
+}
+
+if (-not $SkipTemplateReplicationChecks -and -not [string]::IsNullOrWhiteSpace($TemplateProfile)) {
+  $templateProfilePath = (Resolve-Path -LiteralPath $TemplateProfile).Path
+  $templateReportPath = Join-Path (Split-Path -Parent $templateProfilePath) 'template-replication-diff.md'
+  Invoke-Gate 'template style profile' {
+    python (Join-Path $scriptDir 'check_docx_style_profile.py') $docxPath --template-profile $templateProfilePath
+  }
+  Invoke-Gate 'template page model' {
+    python (Join-Path $scriptDir 'check_docx_page_model.py') $docxPath --template-profile $templateProfilePath
+  }
+  Invoke-Gate 'template replication diff' {
+    python (Join-Path $scriptDir 'report_template_replication_diff.py') $docxPath --template-profile $templateProfilePath --out $templateReportPath
   }
 }
 

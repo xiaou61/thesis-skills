@@ -52,6 +52,9 @@ For a project/repo/system source, run this route:
 
 1. If a school `.docx` template exists, extract it:
    `scripts/extract_docx_template_profile.py <template.docx> --out paper-context/template-extract`
+   Then build the component-oriented replication plan:
+   `scripts/build_thesis_structure_plan.py --template-profile paper-context/template-extract/template-profile.json --spec thesis-ai-standard/templates/thesis-ai-spec.yaml --out paper-context/template-extract/thesis-structure-plan.yaml`
+   Read `references/template-replication-workflow.md` before drafting or final formatting when a template is present.
 2. Initialize/check the thesis workspace:
    `scripts/init_thesis_workspace.py <target-dir>`
 3. Build project evidence:
@@ -74,7 +77,7 @@ For a project/repo/system source, run this route:
    When producing the final `.docx`, embed structural `.vsdx` figures as Visio OLE objects when OfficeCLI or Word automation is available; the `.png` export is only the preview thumbnail. Check exported preview aspect ratios before embedding, and use aspect-fit OLE sizing instead of a universal fixed rectangle.
 9. Run final checks:
    `scripts/check_thesis_workspace.py <workspace>`
-   If a final `.docx` is produced, also run `scripts/check_final_thesis_docx.ps1 <paper.docx> -FigureMap <visio-ole-figure-map.json> -ExpectedVisioOle <count> -MinContentUnits 12000 -MinCjkChars 10000 -RequireContinuationCaption`; do not mark the document complete if this aggregate gate fails.
+   If a final `.docx` is produced, also run `scripts/check_final_thesis_docx.ps1 <paper.docx> -FigureMap <visio-ole-figure-map.json> -ExpectedVisioOle <count> -MinContentUnits 12000 -MinCjkChars 10000 -RequireContinuationCaption`. When a template profile exists, add `-TemplateProfile <template-profile.json>`. Do not mark the document complete if this aggregate gate fails.
 
 Read `references/thesis-module-workflow.md` when planning or executing the full route.
 
@@ -96,6 +99,10 @@ Before drafting or expanding thesis prose, read `references/thesis-voice-and-sty
   Run `build_figure_plan.py` before drafting Chapter 3-6. A normal system thesis should plan many evidence-backed figures, not only one use-case diagram and one function diagram.
 - Word delivery with editable Visio: read `references/docx-production-rules.md`
   For generated structural `.vsdx` figures, run `scripts/check_figure_preview_aspects.py`, then prefer `scripts/embed_visio_ole_with_officecli.py --fit-preview-aspect --max-width 14cm --max-height 18cm` and verify the final `.docx` with both `scripts/check_docx_visio_ole.py` and `scripts/check_docx_duplicate_figure_previews.py`. A PNG preview in Word is not an editable Visio diagram, and a final Word figure block must not contain both a Visio OLE object and the old static PNG preview.
+- Template replication: read `references/template-replication-workflow.md`
+  When a school/template `.docx` exists, do not rely only on visual similarity. Extract `template-profile.json`, build `thesis-structure-plan.yaml`, and verify final output with `scripts/check_docx_component_order.py`, `scripts/check_docx_style_profile.py`, `scripts/check_docx_page_model.py`, `scripts/check_docx_caption_numbering.py`, and `scripts/report_template_replication_diff.py`.
+- Hard DOCX gates: read `references/hard-gate-rule-catalog.md`
+  A final thesis `.docx` should pass component completeness, citation closure, caption closure, and structural hygiene checks. Use `-SkipHardGateChecks` only for rough internal drafts, never for delivery claims.
 - Use-case diagram: `references/visio-use-case-workflow.md`
   Run `layout_use_case_diagram.py`, `check_use_case_layout.py`, `generate_visio_use_case_diagram.ps1`.
 - Function architecture diagram: `references/visio-function-architecture-workflow.md`
@@ -123,7 +130,8 @@ For Word delivery, a PNG inserted into the body is only a preview image. A figur
 - Never fabricate Chapter 5 program screenshots. Chapter 5 is the implementation chapter and should contain real running-program screenshots for implemented functions. If the app cannot be run or screenshots are not provided, create `needs_user_screenshot` entries in `figure-registry.yaml` and list them as evidence gaps.
 - A three-line table means only top border, header-bottom border, and bottom border. No vertical borders, no internal grid lines, and no Word `Table Grid` styling. Verify final DOCX tables with `scripts/check_docx_three_line_tables.py` when a `.docx` is produced.
 - Cross-page tables must not be left to Word defaults. Mark the header row as repeated, disable row splitting across pages, and when continuation captions are required, add visible `续表 x.x` / `表 x.x（续）` captions. Verify with `scripts/check_docx_table_continuations.ps1`; do not rely on visual inspection alone.
-- A final thesis `.docx` must pass the aggregate gate `scripts/check_final_thesis_docx.ps1`, which includes three-line table borders, continuation-table pagination, heading levels, thesis voice, Visio OLE embedding, duplicate-preview detection, and figure aspect checks. If the aggregate gate fails, fix the document or report it as blocked.
+- A final thesis `.docx` must pass the aggregate gate `scripts/check_final_thesis_docx.ps1`, which includes three-line table borders, continuation-table pagination, heading levels, thesis voice, Visio OLE embedding, duplicate-preview detection, figure aspect checks, document component/order checks, citation closure, caption closure, and DOCX structural hygiene. If the aggregate gate fails, fix the document or report it as blocked.
+- When a template profile is supplied, the aggregate gate must also run template style, page model, and replication-diff checks. Do not claim template reproduction from visual inspection alone.
 - A normal undergraduate system-design thesis should be about 12000 Chinese-content units unless the school gives another target. Verify with `scripts/check_docx_thesis_quality.py` or the aggregate gate options `-MinContentUnits 12000 -MinCjkChars 10000`; do not deliver a 4000-word demo as if it were thesis-length.
 - Final thesis prose must read like a student thesis, not an audit report or assistant work log. Keep source evidence in workspace files and reports, but do not put wording such as `证据`, `当前材料`, `根据源码`, `README`, `PRD`, `不编造`, `占位`, or `待补` into the thesis body. Verify with `scripts/check_docx_thesis_voice.py` or the aggregate gate.
 - If a final `.docx` changes after a successful gate run, the gate evidence is stale. Run `scripts/check_final_thesis_docx.ps1` again before any completion claim.
@@ -145,7 +153,9 @@ When `thesis-ai-standard/` exists, read these first and stop unless more detail 
 3. `thesis-ai-standard/templates/figure-registry.yaml`
 4. `paper-context/evidence/`, if present
 5. `paper-context/template-extract/template-rule-overrides.yaml`, if present
-6. `paper-context/database-design/`, if present
-7. `paper-context/figure-plan/`, if present
+6. `paper-context/template-extract/template-profile.json`, if present
+7. `paper-context/template-extract/thesis-structure-plan.yaml`, if present
+8. `paper-context/database-design/`, if present
+9. `paper-context/figure-plan/`, if present
 
 Use deeper reference files only for the active task.
