@@ -21,19 +21,19 @@ python .\scripts\generate_thesis_variants.py
 调用现有 campus affairs demo 生成器生成三版独立草稿：
 
 ```powershell
-python .\scripts\generate_thesis_variants.py --run
+python .\scripts\generate_thesis_variants.py --run --apply-profile
 ```
 
 生成后运行最终 DOCX gate：
 
 ```powershell
-python .\scripts\generate_thesis_variants.py --run --check --expected-visio-ole 8
+python .\scripts\generate_thesis_variants.py --run --apply-profile --check --expected-visio-ole 8
 ```
 
 模板优先版需要模板 profile 时：
 
 ```powershell
-python .\scripts\generate_thesis_variants.py --run --check `
+python .\scripts\generate_thesis_variants.py --run --apply-profile --check `
   --template-profile .\paper-context\template-extract\template-profile.json `
   --expected-visio-ole 8
 ```
@@ -86,6 +86,6 @@ paper-context/thesis-variants/
 ## 风险控制
 
 - 三版脚本只负责隔离运行、记录意图、调用现有生成器和检查器，不替代人工/主线程的论文内容判断。
-- 如果现有生成器不支持某个优化开关，版本差异先体现在 `variant-brief.md` 和后续主线程执行策略中；不要为了三版流程大改生成器内部逻辑。
+- 如果现有生成器不支持某个优化开关，先用 `--apply-profile` 对生成后的 DOCX 施加保守的版本侧重点：模板优先版强化章节边界，图表增强版强化图表解释，正文叙事增强版强化章节衔接。不要为了三版流程大改生成器内部逻辑。
 - PDF 导出不是本仓库当前 gate 的固定入口，只有主线程提供稳定导出命令时才启用。
 - `--check` 会调用聚合 gate。若 `.docx` 不存在，脚本会把该版本标记为 `missing_docx_for_gate`，不会伪造通过结果。

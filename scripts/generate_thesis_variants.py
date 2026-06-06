@@ -18,6 +18,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_OUT_ROOT = ROOT / "paper-context" / "thesis-variants"
 DEFAULT_GENERATOR = ROOT / "scripts" / "generate_campus_affairs_demo.py"
 DEFAULT_CHECKER = ROOT / "scripts" / "check_final_thesis_docx.ps1"
+DEFAULT_PROFILE_APPLIER = ROOT / "scripts" / "apply_thesis_variant_profile.py"
 DOCX_SUFFIX = "_论文草稿.docx"
 
 
@@ -104,6 +105,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--python", default=sys.executable, help="Python executable used to run the generator.")
     parser.add_argument("--run", action="store_true", help="Actually call the existing generator for each variant.")
     parser.add_argument("--check", action="store_true", help="Run the aggregate DOCX gate after generation when a DOCX exists.")
+    parser.add_argument("--apply-profile", action="store_true", help="Apply variant-specific DOCX emphasis after generation.")
     parser.add_argument("--clean", action="store_true", help="Delete each variant workspace before running.")
     parser.add_argument(
         "--export-pdf-command",
@@ -147,6 +149,24 @@ def run_generator(args: argparse.Namespace, workspace: Path) -> dict:
         "returncode": result.returncode,
         "log": str(log),
     }
+
+
+def apply_variant_profile(args: argparse.Namespace, variant: Variant, workspace: Path, docx: Path) -> dict:
+    report = workspace / "reports" / "variant-profile-report.json"
+    command = [
+        args.python,
+        str(DEFAULT_PROFILE_APPLIER),
+        str(docx),
+        "--variant",
+        variant.id,
+        "--out-report",
+        str(report),
+    ]
+    result = run_command(command)
+    log = workspace / "reports" / "variant-profile-run.log"
+    log.parent.mkdir(parents=True, exist_ok=True)
+    log.write_text(result.stdout + ("\n[stderr]\n" + result.stderr if result.stderr else ""), encoding="utf-8")
+    return {"command": command, "returncode": result.returncode, "report": str(report), "log": str(log)}
 
 
 def export_pdf(command_template: str, docx: Path, workspace: Path) -> dict:
@@ -244,6 +264,13 @@ def process_variant(args: argparse.Namespace, variant: Variant) -> dict:
     docx = find_docx(workspace)
     if docx:
         manifest["outputs"]["docx"] = str(docx)
+    if args.apply_profile and docx:
+        manifest["commands"]["variant_profile"] = apply_variant_profile(args, variant, workspace, docx)
+        manifest["outputs"]["variant_profile_report"] = manifest["commands"]["variant_profile"]["report"]
+        if manifest["commands"]["variant_profile"]["returncode"] != 0:
+            manifest["status"] = "variant_profile_failed"
+            write_json(workspace / "variant-manifest.json", manifest)
+            return manifest
     if (workspace / args.figure_map_name).exists():
         manifest["outputs"]["figure_map"] = str(workspace / args.figure_map_name)
 
@@ -289,6 +316,8 @@ def main() -> int:
         )
     if args.check and not args.checker.exists():
         raise SystemExit(f"Aggregate checker not found: {args.checker}")
+    if args.apply_profile and not DEFAULT_PROFILE_APPLIER.exists():
+        raise SystemExit(f"Variant profile applier not found: {DEFAULT_PROFILE_APPLIER}")
     args.out_root = args.out_root.resolve()
     args.out_root.mkdir(parents=True, exist_ok=True)
     matrix_path = write_matrix(args.out_root)
