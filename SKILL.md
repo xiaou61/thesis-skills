@@ -81,6 +81,10 @@ For a project/repo/system source, run this route:
 
 Read `references/thesis-module-workflow.md` when planning or executing the full route.
 
+## Skill Integrity
+
+After editing this skill, run `scripts/check_skill_integrity.py` before claiming the skill is ready. It checks frontmatter, referenced `scripts/` and `references/` files, aggregate gate wiring, and variant workflow reachability.
+
 ## Variant Generation
 
 When the user asks for multiple thesis candidates or wants to compare optimization strategies, use `references/variant-generation-workflow.md`.

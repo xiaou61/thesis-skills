@@ -137,6 +137,7 @@ def find_docx(workspace: Path) -> Path | None:
 def run_generator(args: argparse.Namespace, workspace: Path) -> dict:
     env = os.environ.copy()
     env["CAMPUS_AFFAIRS_DEMO_WORKSPACE"] = str(workspace)
+    env["THESIS_VARIANT_ID"] = workspace.name
     result = run_command([args.python, str(args.generator)], env=env)
     log = workspace / "reports" / "generator-run.log"
     log.parent.mkdir(parents=True, exist_ok=True)
@@ -279,6 +280,15 @@ def write_matrix(out_root: Path) -> Path:
 
 def main() -> int:
     args = parse_args()
+    args.generator = args.generator.resolve()
+    args.checker = args.checker.resolve()
+    if args.run and not args.generator.exists():
+        raise SystemExit(
+            f"Generator not found: {args.generator}\n"
+            "Pass --generator <path-to-generator.py>, or run without --run to create only variant briefs."
+        )
+    if args.check and not args.checker.exists():
+        raise SystemExit(f"Aggregate checker not found: {args.checker}")
     args.out_root = args.out_root.resolve()
     args.out_root.mkdir(parents=True, exist_ok=True)
     matrix_path = write_matrix(args.out_root)
