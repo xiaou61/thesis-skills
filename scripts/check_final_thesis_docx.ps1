@@ -77,6 +77,10 @@ if (-not $SkipHardGateChecks) {
     python (Join-Path $scriptDir 'check_docx_citation_closure.py') $docxPath
   }
 
+  Invoke-Gate 'reference hyperlinks' {
+    python (Join-Path $scriptDir 'check_docx_reference_hyperlinks.py') $docxPath
+  }
+
   Invoke-Gate 'caption closure' {
     python (Join-Path $scriptDir 'check_docx_caption_closure.py') $docxPath
   }
