@@ -81,6 +81,18 @@ For a project/repo/system source, run this route:
 
 Read `references/thesis-module-workflow.md` when planning or executing the full route.
 
+## Variant Generation
+
+When the user asks for multiple thesis candidates or wants to compare optimization strategies, use `references/variant-generation-workflow.md`.
+
+Default to three isolated variants:
+
+1. template-first: prioritize school-template reproduction and template replication gates.
+2. figure-enhanced: prioritize Chapter 3-6 figure planning, Visio sources, OLE embedding, and figure-map gates.
+3. narrative-enhanced: prioritize thesis voice, chapter coherence, and thesis-length prose quality.
+
+Use `scripts/generate_thesis_variants.py` to create the variant matrix and optional isolated runs, then use `scripts/compare_thesis_variants.py` to produce the comparison summary. A winning or merged final `.docx` still needs a fresh `scripts/check_final_thesis_docx.ps1` run; variant gate evidence is not transferable after merging or editing.
+
 ## Chapter Map
 
 - Chapter 1, introduction: background, significance, research status, research content, thesis structure. This is citation-heavy.
@@ -129,14 +141,17 @@ For Word delivery, a PNG inserted into the body is only a preview image. A figur
 - Do not under-plan figures for a normal system thesis. If fewer than 8 figures are planned across Chapters 3-6, explain the small scope or missing evidence.
 - Never fabricate Chapter 5 program screenshots. Chapter 5 is the implementation chapter and should contain real running-program screenshots for implemented functions. If the app cannot be run or screenshots are not provided, create `needs_user_screenshot` entries in `figure-registry.yaml` and list them as evidence gaps.
 - A three-line table means only top border, header-bottom border, and bottom border. No vertical borders, no internal grid lines, and no Word `Table Grid` styling. Verify final DOCX tables with `scripts/check_docx_three_line_tables.py` when a `.docx` is produced.
+- Three-line table verification must fail on table-level borders and inherited `insideH`/`insideV` cell borders, not only obvious left/right grid lines.
 - Cross-page tables must not be left to Word defaults. Mark the header row as repeated, disable row splitting across pages, and when continuation captions are required, add visible `续表 x.x` / `表 x.x（续）` captions. Verify with `scripts/check_docx_table_continuations.ps1`; do not rely on visual inspection alone.
 - A final thesis `.docx` must pass the aggregate gate `scripts/check_final_thesis_docx.ps1`, which includes three-line table borders, continuation-table pagination, heading levels, thesis voice, Visio OLE embedding, duplicate-preview detection, figure aspect checks, document component/order checks, citation closure, reference hyperlink checks, caption closure, and DOCX structural hygiene. If the aggregate gate fails, fix the document or report it as blocked.
 - Body reference markers such as `[1]` must be real Word internal hyperlinks that Ctrl+left-click to the matching reference entry bookmark, not plain text. For generated or repaired DOCX files, run `scripts/apply_docx_reference_hyperlinks.py <paper.docx>` and verify with `scripts/check_docx_reference_hyperlinks.py <paper.docx>`. Do not claim reference handling is complete from citation text closure alone.
+- Citation markers embedded inside prose, for example `相关研究[1]表明`, still need hyperlink and superscript repair; plain-text markers are not acceptable just because the citation number exists in the references.
 - When a template profile is supplied, the aggregate gate must also run template style, page model, and replication-diff checks. Do not claim template reproduction from visual inspection alone.
 - A normal undergraduate system-design thesis should be about 12000 Chinese-content units unless the school gives another target. Verify with `scripts/check_docx_thesis_quality.py` or the aggregate gate options `-MinContentUnits 12000 -MinCjkChars 10000`; do not deliver a 4000-word demo as if it were thesis-length.
 - Final thesis prose must read like a student thesis, not an audit report or assistant work log. Keep source evidence in workspace files and reports, but do not put wording such as `证据`, `当前材料`, `根据源码`, `README`, `PRD`, `不编造`, `占位`, or `待补` into the thesis body. Verify with `scripts/check_docx_thesis_voice.py` or the aggregate gate.
 - If a final `.docx` changes after a successful gate run, the gate evidence is stale. Run `scripts/check_final_thesis_docx.ps1` again before any completion claim.
 - For final `.docx` delivery, do not represent structural Visio diagrams only as static PNGs unless OLE embedding is impossible and explicitly reported. Prefer `scripts/embed_visio_ole_with_officecli.py --fit-preview-aspect`, then verify with `scripts/check_docx_visio_ole.py` and `scripts/check_docx_duplicate_figure_previews.py`.
+- A Visio `o:OLEObject` tag is insufficient by itself. `check_docx_visio_ole.py` must also see a non-external relationship target under `word/embeddings/`; missing payloads are delivery blockers.
 - Do not force every Visio OLE object into one fixed display size such as `14cm x 8cm`. Preserve the preview aspect ratio. If `scripts/check_figure_preview_aspects.py` reports an extreme flat/tall figure, re-layout or split the source diagram before final delivery.
 - For generated flowchart `.vsdx` figures, do not rely on Visio automatic routing alone. Run `layout_flowchart_diagram.py` so each edge receives orthogonal route points, then run `check_flowchart_layout.py` and require `connectorCrossings: 0` before rendering or embedding the figure.
 - For generated E-R `.vsdx` figures, run `check_er_layout.py` after `layout_er_diagram.py` and require both `overlapPairs: 0` and `connectorCrossings: 0`. If the overview E-R is crowded, put only entities and relationships in the overview and move attributes to single-entity E-R diagrams and three-line tables.

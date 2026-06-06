@@ -45,6 +45,7 @@ A thesis three-line table has exactly these visible rules by default:
 - table bottom border: single line, normally `1.5pt`
 
 It must not have visible vertical borders, inside horizontal grid lines, or Word `Table Grid` styling. A table created with `doc.add_table(...); table.style = "Table Grid"` is a grid table, not a three-line table.
+The checker treats table-level borders and cell-level `insideH`/`insideV` remnants as delivery blockers, because Word may render inherited grid lines even when a quick visual pass looks close.
 
 When generating `.docx` with `python-docx`, explicitly remove table-level borders and set cell-level OOXML borders for only the top, header-bottom, and bottom lines. After generation, run:
 
@@ -61,6 +62,17 @@ For cross-page thesis tables, do not rely on Word defaults. Mark the first row w
 ```
 
 Do not pre-split long three-line tables into very small artificial chunks just to avoid pagination. Generate a normal complete table first, then use the Word pagination gate to decide whether page breaks or real continuation captions are needed. Avoid applying paragraph-level `keep_with_next` or `keep_together` inside every table cell; Word displays those paragraph properties as black square formatting markers when "show formatting marks" is enabled, which makes the table look broken even when borders are correct.
+
+### Reference Hyperlinks And Superscript Markers
+
+Body citation markers such as `[1]` must be Word internal hyperlinks to `ref_1`, `ref_2`, and so on, and the marker run must be superscript:
+
+```powershell
+python .\scripts\apply_docx_reference_hyperlinks.py .\paper.docx
+python .\scripts\check_docx_reference_hyperlinks.py .\paper.docx
+```
+
+The checker scans non-hyperlinked body text as a paragraph-level stream, so `[1]` embedded inside normal prose such as `相关研究[1]表明` is still a plain-text citation until the repair script converts it to a hyperlink and superscript run.
 
 ### Editable Visio Figures In Word
 
@@ -109,6 +121,7 @@ The figure map is a JSON list:
 ```
 
 Default layout is: Visio OLE paragraph, then figure caption paragraph. Do not insert the OLE object into the caption paragraph unless the user explicitly accepts that rough layout. After OLE embedding, the original static PNG preview paragraph for the same structural figure must be removed; otherwise Word will display the same Visio figure twice.
+The Visio OLE checker must report both a Visio `ProgID` and a valid relationship target under `word/embeddings/`. A stale `o:OLEObject` element with a missing or external payload is not an editable Visio figure, even if Word still shows a preview image.
 
 ### Markdown Drafts And Pandoc
 
@@ -144,8 +157,10 @@ Do not claim a `.docx` task is done when:
 - the input is not a readable OOXML `.docx`
 - template alignment was claimed but no template profile exists
 - tables were called three-line tables but still use `Table Grid`, vertical borders, or internal grid lines
+- table-level borders or inherited cell `insideH`/`insideV` borders remain in a supposed three-line table
 - cross-page tables do not repeat the header row, allow rows to split across pages, or lack a required visible continuation caption
 - generated Visio figures are only static PNGs in the final `.docx` and the lack of OLE embedding was not explicitly reported
+- Visio OLE relationships are missing, external, or point outside `word/embeddings/`
 - generated Visio figure blocks contain both a Visio OLE object and the old static PNG preview before the same caption
 - OLE figures were embedded with a fixed size that visibly stretches the preview instead of preserving the source aspect ratio
 - `check_figure_preview_aspects.py` reports extreme flat/tall figure warnings and no split/re-layout decision is documented

@@ -76,6 +76,11 @@ def check_table(table: ET.Element, index: int) -> list[TableFinding]:
     for edge in ("left", "right", "insideH", "insideV"):
         if is_visible_border(tbl_borders, edge):
             findings.append(TableFinding(index, "error", f"table-level {edge} border is visible"))
+    for edge in ("top", "bottom"):
+        if is_visible_border(tbl_borders, edge):
+            findings.append(
+                TableFinding(index, "error", f"table-level {edge} border is visible; use cell-level three-line borders")
+            )
 
     header_cells = row_cells(rows[0])
     if not header_cells:
@@ -86,7 +91,7 @@ def check_table(table: ET.Element, index: int) -> list[TableFinding]:
             findings.append(TableFinding(index, "error", f"header cell {cell_index} is missing top border"))
         if not is_visible_border(borders, "bottom"):
             findings.append(TableFinding(index, "error", f"header cell {cell_index} is missing header-bottom border"))
-        for edge in ("left", "right"):
+        for edge in ("left", "right", "insideH", "insideV"):
             if is_visible_border(borders, edge):
                 findings.append(TableFinding(index, "error", f"header cell {cell_index} has visible {edge} border"))
 
@@ -95,14 +100,16 @@ def check_table(table: ET.Element, index: int) -> list[TableFinding]:
         borders = cell_borders(cell)
         if not is_visible_border(borders, "bottom"):
             findings.append(TableFinding(index, "error", f"last-row cell {cell_index} is missing bottom border"))
-        for edge in ("left", "right"):
+        if rows[-1] is not rows[0] and is_visible_border(borders, "top"):
+            findings.append(TableFinding(index, "error", f"last-row cell {cell_index} has visible internal top border"))
+        for edge in ("left", "right", "insideH", "insideV"):
             if is_visible_border(borders, edge):
                 findings.append(TableFinding(index, "error", f"last-row cell {cell_index} has visible {edge} border"))
 
     for row_index, row in enumerate(rows[1:-1], start=2):
         for cell_index, cell in enumerate(row_cells(row), start=1):
             borders = cell_borders(cell)
-            for edge in ("top", "bottom", "left", "right"):
+            for edge in ("top", "bottom", "left", "right", "insideH", "insideV"):
                 if is_visible_border(borders, edge):
                     findings.append(TableFinding(index, "error", f"body cell r{row_index}c{cell_index} has visible {edge} border"))
 

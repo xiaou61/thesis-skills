@@ -134,6 +134,7 @@ def collect_hyperlinked_citations(root: ET.Element, body_block_count: int) -> li
 
 def collect_unlinked_single_citations(root: ET.Element, body_block_count: int) -> list[dict[str, object]]:
     citations: list[dict[str, object]] = []
+    parents = {child_node: parent_node for parent_node in root.iter() for child_node in list(parent_node)}
     block_index = 0
     for child in body_children(root):
         if child.tag not in {W + "p", W + "tbl"}:
@@ -141,17 +142,20 @@ def collect_unlinked_single_citations(root: ET.Element, body_block_count: int) -
         block_index += 1
         if block_index > body_block_count:
             break
-        for run in child.findall(".//w:r", NS):
+        pieces: list[str] = []
+        for node in child.iter(W + "t"):
+            parent = parents.get(node)
             inside_hyperlink = False
-            for hyperlink in child.findall(".//w:hyperlink", NS):
-                if run in list(hyperlink.iter()):
+            while parent is not None and parent is not child:
+                if parent.tag == W + "hyperlink":
                     inside_hyperlink = True
                     break
-            if inside_hyperlink:
-                continue
-            text = element_text(run)
-            for match in re.finditer(r"(?<!\d)\[([0-9]{1,3})\]", text):
-                citations.append({"number": int(match.group(1)), "block": block_index, "text": match.group(0)})
+                parent = parents.get(parent)
+            if not inside_hyperlink:
+                pieces.append(node.text or "")
+        text = "".join(pieces)
+        for match in re.finditer(r"(?<!\d)\[([0-9]{1,3})\]", text):
+            citations.append({"number": int(match.group(1)), "block": block_index, "text": match.group(0)})
     return citations
 
 
