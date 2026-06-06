@@ -29,6 +29,7 @@ XML_SPACE = f"{{{XML_NS}}}space"
 
 REF_PREFIX_RE = re.compile(r"^\s*\[?([0-9]{1,3})\]?[\.、\s]")
 SINGLE_CITATION_RE = re.compile(r"(?<!\d)\[([0-9]{1,3})\]")
+CITATION_AFTER_PUNCT_RE = re.compile(r"([。！？；，、,.!?;:：])(\s*)\[([0-9]{1,3})\]")
 
 
 def w_tag(name: str) -> str:
@@ -159,8 +160,25 @@ def make_citation_hyperlink(number: int, nsmap: dict | None) -> etree._Element:
     rpr = etree.SubElement(run, w_tag("rPr"))
     style = etree.SubElement(rpr, w_tag("rStyle"))
     style.set(W + "val", "Hyperlink")
+    vert_align = etree.SubElement(rpr, w_tag("vertAlign"))
+    vert_align.set(W + "val", "superscript")
     append_text(run, f"[{number}]")
     return hyperlink
+
+
+def normalize_citation_position(text: str) -> str:
+    """Move punctuation-following citations to the conventional pre-punctuation position."""
+
+    def replace(match: re.Match[str]) -> str:
+        punctuation, whitespace, number = match.groups()
+        return f"[{number}]{punctuation}{whitespace}"
+
+    previous = None
+    current = text
+    while previous != current:
+        previous = current
+        current = CITATION_AFTER_PUNCT_RE.sub(replace, current)
+    return current
 
 
 def replace_child(parent: etree._Element, child: etree._Element, replacements: list[etree._Element]) -> None:
@@ -196,7 +214,7 @@ def link_citations_in_paragraph(paragraph: etree._Element) -> int:
         text_nodes = child.xpath("./w:t", namespaces=NS)
         if not text_nodes or not text_nodes[0].text:
             continue
-        text = text_nodes[0].text
+        text = normalize_citation_position(text_nodes[0].text)
         matches = list(SINGLE_CITATION_RE.finditer(text))
         if not matches:
             continue

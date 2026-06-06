@@ -22,6 +22,7 @@ W = f"{{{W_NS}}}"
 CITATION_RE = re.compile(r"(?<!\d)\[([0-9,\-，、\s]+)\]")
 SINGLE_CITATION_RE = re.compile(r"^\[([0-9]{1,3})\]$")
 REF_PREFIX_RE = re.compile(r"^\s*\[?([0-9]{1,3})\]?[\.、\s]")
+PUNCTUATION_BEFORE_CITATION_RE = re.compile(r"([。！？；，、,.!?;:：])\s*(\[[0-9]{1,3}\])")
 
 
 def expand_citation_numbers(raw: str) -> list[int]:
@@ -111,12 +112,21 @@ def collect_hyperlinked_citations(root: ET.Element, body_block_count: int) -> li
             match = SINGLE_CITATION_RE.match(text)
             if not match:
                 continue
+            is_superscript = False
+            for run in hyperlink.findall(".//w:r", NS):
+                if not element_text(run).strip():
+                    continue
+                vert = run.find("w:rPr/w:vertAlign", NS)
+                if vert is not None and (vert.get(W + "val") or "") == "superscript":
+                    is_superscript = True
+                    break
             citations.append(
                 {
                     "number": int(match.group(1)),
                     "anchor": hyperlink.get(W + "anchor") or "",
                     "block": block_index,
                     "text": text,
+                    "superscript": is_superscript,
                 }
             )
     return citations
@@ -166,6 +176,11 @@ def check_docx(path: Path) -> dict[str, object]:
     warnings: list[str] = []
     if "references" not in positions:
         errors.append("missing references section")
+    for block in body_blocks:
+        for match in PUNCTUATION_BEFORE_CITATION_RE.finditer(block.text):
+            errors.append(
+                f"body citation {match.group(2)} at block {block.index} appears after punctuation `{match.group(1)}`; place it before the punctuation"
+            )
     for number in cited_numbers:
         if number not in refs:
             errors.append(f"citation [{number}] has no matching reference entry")
@@ -189,6 +204,8 @@ def check_docx(path: Path) -> dict[str, object]:
         expected_anchor = f"ref_{number}"
         if link.get("anchor") != expected_anchor:
             errors.append(f"body citation [{number}] links to {link.get('anchor') or '(empty)'} instead of {expected_anchor}")
+        if not link.get("superscript"):
+            errors.append(f"body citation [{number}] at block {link['block']} is linked but not formatted as superscript")
 
     for number in sorted(set(refs) - set(cited_numbers)):
         warnings.append(f"reference [{number}] has no body citation")
@@ -214,6 +231,7 @@ def render_markdown(report: dict[str, object]) -> str:
         f"- Reference bookmarks: `{len(report['referenceBookmarks'])}`",
         f"- Hyperlinked citation runs: `{len(report['hyperlinkedCitations'])}`",
         f"- Plain-text citation runs: `{len(report['unlinkedCitations'])}`",
+        f"- Superscript citation runs: `{sum(1 for item in report['hyperlinkedCitations'] if item.get('superscript'))}`",
         f"- Errors: `{len(report['errors'])}`",
         f"- Warnings: `{len(report['warnings'])}`",
     ]
